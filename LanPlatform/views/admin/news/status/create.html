@@ -1,0 +1,65 @@
+﻿<div class="modal-header">
+    <button type="button" ng-click="Cancel()" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3 class="modal-title" id="modal-title">Create News Status</h3>
+</div>
+
+<div class="modal-body">
+    <form class="form-horizontal" ng-disabled="RequestStatus == 1">
+        <fieldset>
+            <legend>General Settings</legend>
+            <div class="form-group form-group">
+                <label for="inputTitle" class="col-md-2 control-label">Title</label>
+                <div class="col-md-5">
+                    <input class="form-control" id="inputTitle" placeholder="" type="text" ng-model="FormTitle">
+                </div>
+            </div>
+
+            <div class="form-group form-group">
+                <label for="inputContentType" class="col-md-2 control-label">Type</label>
+                <div class="col-md-5">
+                    <select class="form-control" id="inputContentType" placeholder="" type="text" ng-model="FormContentType">
+                        <option value="0">Standard</option>
+                        <option value="1">General Game</option>
+                        <option value="-1">TS 2.1 DM Server [UNFINISHED]</option>
+                        <option value="-1">TS 2.1 RP Server [UNFINISHED]</option>
+                        <option value="-1">TS 2.1 ZH Server [UNFINISHED]</option>
+                        <option value="-1">Paranoia Server [UNFINISHED]</option>
+                        <option value="-1">Gabion Offline [UNFINISHED]</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+
+    <form class="form-horizontal" ng-show="FormContentType == 1">
+        <fieldset>
+            <legend>General Game Settings</legend>
+            <div class="form-group form-group">
+                <label for="inputGameId" class="col-md-2 control-label">App Id</label>
+                <div class="col-md-5">
+                    <input class="form-control" id="inputGameId" placeholder="" type="text" ng-model="FormAppId">
+                </div>
+            </div>
+        </fieldset>
+    </form>
+        
+    <div class="panel panel-default" ng-show="FormContentType == -1">
+        <div class="panel-heading">SAMPLE TEXT Settings</div>
+        <div class="panel-body">
+            SAMPLE TEXT<br/><br/>
+            Seriously though, you shouldn't be seeing this.
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <span class="form-control-static pull-left" ng-show="RequestStatus == 1">
+        <div class="loader loader-md" style="display: inline-block"></div>
+        <div style="height: 100%; vertical-align: top; display: inline-block; margin-top: 5px;margin-left:4px">Submitting...</div>
+    </span>
+    <span class="form-control-static pull-left text-danger" ng-show="RequestStatus == 2">
+        <i class="fa fa-exclamation-triangle" style="margin-right: 4px" aria-hidden="true"></i> {{ErrorMessage}}
+    </span>
+    <button class="btn btn-primary" type="button" ng-click="Ok()">Submit</button>
+    <button class="btn btn-default" type="button" ng-click="Cancel()">Cancel</button>
+</div>

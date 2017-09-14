@@ -1,0 +1,43 @@
+﻿<ul class="breadcrumb" style="margin-left: 10px; margin-right: 10px">
+    <li><a href="#!/ambience">Ambience</a></li>
+    <li class="active">Lighting</li>
+</ul>
+
+<div style="width: 100%; text-align: center">
+    <div class="panel panel-default" style="width: 98%; display: inline-block; text-align: initial">
+        <div class="panel-heading">Lights</div>
+        <div class="panel-body" style="padding: 0">
+            <table class="table table-striped table-hover" style="margin-bottom: 0">
+                <thead>
+                    <tr>
+                        <th>Light</th>
+                        <th>Brightness</th>
+                        <th>Total LANs</th>
+                        <th>Last Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="account in ActiveUsers" such-href="account/{{account.Id}}">
+                        <td>
+                            <i style="color: #00bc8c;margin-right:2px" class="fa fa-wifi" aria-hidden="true"></i>
+                            {{account.DisplayName}}
+                        </td>
+                        <td>{{account.FirstName}} {{account.LastName}}</td>
+                        <td>{{account.TotalEvents}}</td>
+                        <td>{{account.GetLastActiveTime()}}</td>
+                    </tr>
+
+                    <tr ng-repeat="account in InactiveUsers" such-href="account/{{account.Id}}">
+                        <td>
+                            <i style="color: #605e5e;margin-right:2px" class="fa fa-wifi" aria-hidden="true"></i>
+                            {{account.DisplayName}}
+                        </td>
+                        <td>{{account.FirstName}} {{account.LastName}}</td>
+                        <td>{{account.TotalEvents}}</td>
+                        <td>{{account.GetLastActiveTime()}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

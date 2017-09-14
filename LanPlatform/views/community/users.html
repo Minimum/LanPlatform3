@@ -1,0 +1,57 @@
+﻿<ul class="breadcrumb" style="margin-left: 10px; margin-right: 10px">
+    <li><a href="#!/community">Community</a></li>
+    <li class="active">Player List</li>
+</ul>
+
+<div class="lanPageArea">
+    <div style="text-align: center" ng-show="LoadStatus == 0">
+        <div class="loader loader-lg"></div> <span style="font-size: 42px; vertical-align: middle; margin-left: 15px">Loading accounts</span>
+    </div>
+        
+    <div class="alert alert-danger" ng-show="LoadStatus == 2">
+        <h4>Error!</h4>
+        <p>There has been an issue retreiving data from the server.</p>
+        <p>Message: {{ErrorMessage}}</p>
+    </div>
+
+    <div class="panel panel-default" ng-show="LoadStatus == 1">
+        <div class="panel-heading">Players</div>
+        <div class="panel-body" style="padding: 0">
+            <table class="table table-striped table-hover" style="margin-bottom: 0">
+                <thead>
+                <tr>
+                    <th>Nickname</th>
+                    <th>Full Name</th>
+                    <th>Total LANs</th>
+                    <th>Last Active</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="account in Accounts" such-href="account/{{account.Id}}">
+                    <td>
+                        <i style="margin-right: 2px" class="fa fa-wifi" aria-hidden="true" ng-style="{color: (account.IsActive() ? '#00bc8c' : '#605e5e')}"></i>
+                        {{account.DisplayName}}
+                    </td>
+                    <td>{{account.FirstName}} {{account.LastName}}</td>
+                    <td>{{account.TotalEvents}}</td>
+                    <td>{{account.GetLastActiveTime()}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div style="width: 100%;text-align:center" ng-show="LoadStatus == 1">
+        <ul class="pagination">
+            <li ng-class="{disabled: Paginator.PreviousPage.Active==false}">
+                <a ng-href="{{Paginator.PreviousPage.Link}}">&laquo;</a>
+            </li>
+            <li ng-repeat="page in Paginator.Pages" ng-class="{active: page.CurrentPage==true}">
+                <a ng-href="{{page.Link}}">{{page.Number}}</a>
+            </li>
+            <li ng-class="{disabled: Paginator.NextPage.Active==false}">
+                <a ng-href="{{Paginator.NextPage.Link}}">&raquo;</a>
+            </li>
+        </ul>
+    </div>
+</div>

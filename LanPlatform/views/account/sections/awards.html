@@ -1,0 +1,27 @@
+﻿<h3>Total Awards <span style="font-size: 20px; color: #b7b7b7; margin-left: 2px">{{Account.TotalAwards}}</span></h3>
+
+Level {{Account.AwardsLevel}}<br />
+XP: {{Account.AwardsXp}} / 1,000<br />
+<div class="progress" style="width: 120px; height: 6px">
+    <div class="progress-bar progress-bar-success" style="width: 40%"></div>
+</div>
+
+<h3>Awards</h3>
+<div style="display: flex">
+    <div style="flex-basis: 200px;padding-right:8px">
+        <div class="list-group">
+            <a href="" class="list-group-item default active" ng-click="SelectAwardRole(0)">
+                General
+            </a>
+            <a href="" class="list-group-item default" ng-click="SelectAwardRole(1)">
+                The Specialists 2.1
+            </a>
+            <a href="" class="list-group-item default" ng-click="SelectAwardRole(2)">
+                Paranoia
+            </a>
+        </div>
+    </div>
+    <div class="well well-sm" style="flex-grow: 1; padding-left: 4px">
+        <img src="content_fixed/KillerCarKill.svg" style="width:64px" uib-tooltip-html="AwardTestHtml" />
+    </div>
+</div>

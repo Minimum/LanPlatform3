@@ -1,0 +1,39 @@
+﻿<ul class="breadcrumb" style="margin-left: 10px; margin-right: 10px">
+    <li><a href="#!/library">Library</a></li>
+    <li class="active">Loaner Accounts</li>
+</ul>
+
+<h1 style="padding-left: 20px">Loaner Accounts</h1><br />
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="account in Accounts">
+            <td>
+                <i class="fa fa-ticket" style="margin-right:4px" aria-hidden="true"></i>
+                <a ng-href="#!/library/loaner/{{account.Id}}" style="text-decoration: none">{{account.Username}}</a>
+            </td>
+            <td>
+                <span ng-hide="account.ShowPassword()">*****</span>
+                <span ng-show="account.ShowPassword()">{{account.Password}}</span>
+            </td>
+            <td>
+                <span ng-show="account.CheckoutUser == 0" class="text-success">Available for checkout</span>
+                <span ng-show="account.CheckoutUser != 0 && !ShowCheckin(account)" class="text-danger">Checked out by {{account.CheckoutUserName}}</span>
+                <span ng-show="account.CheckoutUser != 0 && ShowCheckin(account)" class="text-warning">Checked out by you</span>
+            </td>
+            <td style="text-align:right">
+                <a ng-click="Checkout(account)" class="btn btn-success btn-xs" ng-show="ShowCheckout(account)">Check out</a>
+                <a ng-click="Checkin(account)" class="btn btn-warning btn-xs" ng-show="ShowCheckin(account)">Check in</a>
+                <a ng-click="Checkin(account)" class="btn btn-warning btn-xs" ng-show="ShowForceCheckin(account)">Force check in</a>
+            </td>
+        </tr>
+    </tbody>        
+</table>

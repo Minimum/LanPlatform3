@@ -1,0 +1,68 @@
+﻿<div class="modal-header">
+    <button type="button" ng-click="Cancel()" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3 class="modal-title" id="modal-title">Edit Account: #{{Account.Id}} - {{Account.DisplayName}}</h3>
+</div>
+
+<div class="modal-body" id="modal-body">
+    <form class="form-horizontal">
+        <fieldset>
+            <legend>Info</legend>
+            <div class="form-group form-group-sm">
+                <label for="inputDisplayName" class="col-md-2 control-label">Display Name</label>
+                <div class="col-md-10">
+                    <input class="form-control" id="inputDisplayName" placeholder="{{Account.DisplayName}}" type="text" ng-model="FormModel.DisplayName">
+                </div>
+            </div>
+
+            <div class="form-group form-group-sm">
+                <label for="inputFirstName" class="col-md-2 control-label">First Name</label>
+                <div class="col-md-10">
+                    <input class="form-control" id="inputFirstName" placeholder="{{Account.FirstName}}" type="text" ng-model="FormModel.FirstName">
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label for="inputLastName" class="col-md-2 control-label">Last Name</label>
+                <div class="col-md-10">
+                    <input class="form-control" id="inputLastName" placeholder="{{Account.LastName}}" type="text" ng-model="FormModel.LastName">
+                </div>
+            </div>
+        </fieldset>
+        <fieldset ng-show="AdvancedEditAccess">
+            <legend>Events</legend>
+
+            <div class="form-group form-group-sm">
+                <label for="inputTotalEvents" class="col-md-2 control-label">Total Events</label>
+                <div class="col-md-10">
+                    <input class="form-control" id="inputTotalEvents" placeholder="{{Account.TotalEvents}}" type="text" ng-model="FormModel.TotalEvents">
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label for="inputRemoteEvents" class="col-md-2 control-label">Remote Events</label>
+                <div class="col-md-10">
+                    <input class="form-control" id="inputRemoteEvents" placeholder="{{Account.RemoteEvent}}" type="text" ng-model="FormModel.RemoteEvent">
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label for="inputEventOffset" class="col-md-2 control-label">Event Offset</label>
+                <div class="col-md-10">
+                    <input class="form-control" id="inputEventOffset" placeholder="{{Account.EventOffset}}" type="text" ng-model="FormModel.EventOffset">
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label for="inputLastEvent" class="col-md-2 control-label">Last Event</label>
+                <div class="col-md-10">
+                    <input class="form-control" id="inputLastEvent" placeholder="{{Account.LastEvent}}" type="text" ng-model="FormModel.LastEvent">
+                </div>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <span class="form-control-static pull-left" ng-show="RequestStatus == 1">
+        <div id="modalLoginStatusIcon" class="loader dual small" style="display: inline-block"></div>
+        <div style="height: 100%; vertical-align: top; display: inline-block; margin-top: 5px;margin-left:4px">Sending request.</div>
+    </span>
+    <button class="btn btn-primary" type="button" ng-click="Ok()">Save</button>
+    <button class="btn btn-default" type="button" ng-click="Cancel()">Cancel</button>
+</div>

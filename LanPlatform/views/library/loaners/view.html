@@ -1,0 +1,58 @@
+﻿<div style="margin-left: 10px; margin-right: 10px; text-align: center" ng-show="LoadStatus == -1">
+    There has been an error loading this account.
+</div>
+
+<div style="margin-left: 10px; margin-right: 10px; text-align: center" ng-show="LoadStatus == 0">
+    <div class="loader loader-lg"></div> <span style="font-size: 42px; vertical-align: middle; margin-left: 15px">Loading Account</span>
+</div>
+
+<div ng-show="LoadStatus == 1" style="margin-left: 10px; margin-right: 10px">
+    <ul class="breadcrumb">
+        <li><a href="#!/library">Library</a></li>
+        <li><a href="#!/library/loaners">Loaner Accounts</a></li>
+        <li class="active">{{Account.Username}}</li>
+    </ul>
+
+    <div>
+        <div style="display: inline-block; margin-right: 8px">
+            <h2 style="margin-top: 0px; font-size: 40px">
+                {{Account.Username}}
+            </h2>
+
+            <h4 class="text-success" ng-show="CheckoutStatus == 0">
+                <i class="fa fa-id-card-o" style="margin-right: 4px" aria-hidden="true"></i>
+                Currently available
+            </h4>
+            <h4 class="text-warning" ng-show="CheckoutStatus == 1">
+                <i class="fa fa-id-card-o" style="margin-right: 4px" aria-hidden="true"></i>
+                Checked out by you
+            </h4>
+            <h4 class="text-danger" ng-show="CheckoutStatus == 2">
+                <i class="fa fa-id-card-o" style="margin-right: 4px" aria-hidden="true"></i>
+                Checked out by {{Account.CheckoutUserName}}
+            </h4>
+        </div>
+
+        <div style="display: inline-block">
+            <a ng-click="Checkout()" class="btn btn-success btn-xs" ng-show="CheckoutStatus == 0 && AllowCheckout == true">Check out</a>
+            <a ng-click="Checkin()" class="btn btn-warning btn-xs" ng-show="CheckoutStatus == 1 && AllowCheckout == true">Check in</a>
+            <a ng-click="Checkin()" class="btn btn-warning btn-xs" ng-show="CheckoutStatus == 2 && ForceCheckin == true">Force check in</a>
+        </div>
+    </div>
+
+    <h3>Password <span class="text-muted" style="font-size: 16px;margin-left:4px" ng-show="CheckoutStatus == 1">{{Account.Password}}</span> <span class="text-muted" style="font-size: 16px;margin-left:4px" ng-hide="CheckoutStatus == 1">*****</span></h3>
+
+    <h3>
+        App List
+
+        <a ng-click="AddApp()" class="btn btn-warning btn-xs" style="margin-left:8px" ng-show="AllowEditing == true">Add App</a>
+    </h3>
+
+    <table class="table table-striped table-hover">
+        <tbody>
+            <tr ng-repeat="app in Account.Apps">
+                <td>{{app.Title}} <a ng-click="RemoveApp(app)" class="btn btn-danger btn-xs" style="margin-left:8px" ng-show="AllowEditing == true">Remove</a></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,197 @@
+﻿account
+	PUT		/
+		Creates an account.
+	GET		/{id}
+		Gets an account.
+	POST	/{id}
+		Edits an account.
+	POST	/{id}/avatar
+		Sets an account's avatar.
+
+	GET		/{id}/role
+		Gets a user's assigned roles.
+	PUT		/{id}/role/{roleId}
+		Assigns a role to a user.
+	DELETE	/{id}/role/{roleId}
+		Removes a role from a user.
+
+	GET		/{id}/access
+		Gets all of a user's access flags.
+	GET		/{id}/access/{scope}
+		Gets all of a user's access flags in a given scope.
+	GET		/{id}/access/{scope}/{flag}
+		Checks for access.
+
+	GET		/{id}/auth/user
+		Gets usernames associated with the account.
+	PUT		/{id}/auth/user
+		Creates a new username for the account.
+	POST	/{id}/auth/user/{userId}
+		Edits a username.
+	DELETE	/{id}/auth/user/{userId}
+		Deletes a username.
+
+	GET		/{id}/auth/session
+		Gets sessions associated with the account.
+	PUT		/{id}/auth/session
+		Creates a new session for the account.
+	DELETE	/{id}/auth/session/{sessionId}
+		Deletes a session.
+
+	GET		/{id}/auth/challenge
+		Gets auth challenges associated with the account.
+	PUT		/{id}/auth/challenge
+		Creates a server auth challenge.
+	GET		/{id}/auth/challenge/{challengeId}
+		Gets a server auth challenge.
+	DELETE	/{id}/auth/challenge/{challengeId}
+		Deletes a server auth challenge.
+
+	GET		/search?{args}
+		Searches through accounts.
+
+	GET		/local
+		Returns the currently logged in account.
+	GET		/local/access/{scope}/{flag}
+		Checks if the local account has access to a flag.
+
+	POST	/login/user
+		Login using a username.
+	POST	/logout
+		Logout.
+
+role
+	PUT		/
+		Creates a role.
+	GET		/{id}
+		Gets a role.
+	POST	/{id}
+		Edits a role.
+	DELETE	/{id}
+		Deletes a role.
+
+	GET		/{id}/access
+		Gets all of a role's access flags.
+	GET		/{id}/access/{scope}
+		Gets all of a role's access flags in a given scope.
+	GET		/{id}/access/{scope}/{flag}
+		Checks if a role has access.
+	PUT		/{id}/access/{scope}/{flag}
+		Adds an access flag to a role.
+	DELETE	/{id}/access/{scope}/{flag}
+		Removes an access flag from a role.
+
+app
+	PUT		/
+		Creates an app.
+	GET		/{id}
+		Gets an app.
+	POST	/{id}
+		Edits an app.
+	DELETE	/{id}
+		Deletes an app.
+
+loaner
+	PUT		/
+		Creates a loaner account.
+	GET		/{id}
+		Gets a loaner account.
+	POST	/{id}
+		Edits a loaner account.
+	DELETE	/{id}
+		Deletes a loaner account.
+
+	PUT		/{id}/app/{appId}
+		Adds an app to a loaner account.
+	DELETE	/{id}/app/{appId}
+		Removes an app from a loaner account.
+
+	POST	/{id}/checkout
+		Checks out an account.
+	POST	/{id}/checkin
+		Checks in an account.
+
+	GET		/search?{args}
+		Searches through the loaner accounts.
+
+event
+	PUT		/
+		Creates a LAN event.
+	GET		/{id}
+		Gets a LAN event.
+	POST	/{id}
+		Edits a LAN event.
+	DELETE	/{id}
+		Deletes a LAN event.
+
+	PUT		/{id}/guest
+		Adds a guest to an event.
+	GET		/{id}/guest
+		Gets all guests related to an event.
+	GET		/{id}/guest/{guestId}
+		Gets a guest related to an event.
+	POST	/{id}/guest/{guestId}
+		Edits a guest related to an event.
+	DELETE	/{id}/guest/{guestId}
+		Removes a guest from an event.
+
+news
+	PUT		/
+		Creates a news status.
+	GET		/{id}
+		Gets a news status.
+	POST	/{id}
+		Edits a news status.
+	DELETE	/{id}
+		Deletes a news status.
+
+	GET		/current
+		Gets the current news status.
+	POST	/current
+		Sets the current news status.
+
+	GET		/search?{args}
+		Searches through the news statuses.
+
+weather
+	TODO
+
+content
+	PUT		/
+		Creates a content entry.
+	GET		/{id}
+		Gets info on a content entry.
+	POST	/{id}
+		Edits a content entry.
+	DELETE	/{id}
+		Deletes a content entry.
+	GET		/{id}/data
+		Gets file data from a content entry.
+
+music
+	PUT		/song
+		Creates a song.
+	GET		/song/{id}
+		Gets a song.
+	POST	/song/{id}
+		Edits a song.
+	DELETE	/song/{id}
+		Deletes a song.
+		
+	PUT		/playlist
+		Creates a playlist.
+	GET		/playlist/{id}
+		Gets a playlist.
+	POST	/playlist/{id}
+		Edits a playlist.
+	DELETE	/playlist/{id}
+		Deletes a playlist.
+
+	PUT		/playlist/{id}/song
+		Adds a song to a playlist.
+	GET		/playlist/{id}/song
+		Gets all of the entries in a playlist.
+	POST	/playlist/{id}/song/{entryId}
+		Edits a playlist entry.
+	DELETE	/playlist/{id}/song/{entryId}
+		Deletes a playlist entry.

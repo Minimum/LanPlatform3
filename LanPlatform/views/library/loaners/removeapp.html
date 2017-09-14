@@ -1,0 +1,30 @@
+﻿<div class="modal-header">
+    <button type="button" ng-click="Cancel()" class="close" data-dismiss="modal" aria-hidden="true" ng-hide="RequestStatus == 1">&times;</button>
+    <h3 class="modal-title" id="modal-title">Remove Loaner App</h3>
+</div>
+
+<div class="modal-body" id="modal-body">
+    <div ng-show="RequestStatus == 0">
+        Are you sure you want to remove {{App.Title}} from {{Account.Username}}?
+    </div>
+
+    <div ng-show="RequestStatus == 1">
+        <div class="loader loader-md"></div> Removing {{App.Title}} from {{Account.Username}}
+    </div>
+
+    <div ng-show="RequestStatus == 2">
+        {{App.Title}} has been successfully removed from {{Account.Username}}.
+    </div>
+
+    <div ng-show="RequestStatus == -1">
+        There has been an error in removing {{App.Title}} from {{Account.Username}}.<br />
+        Error: {{ErrorMessage}}<br />
+        Please try again later.
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-danger" type="button" ng-click="Remove()" ng-show="RequestStatus < 1">Remove</button>
+    <button class="btn btn-default" type="button" ng-click="Cancel()" ng-show="RequestStatus < 1">Cancel</button>
+    <button class="btn btn-primary" type="button" ng-click="Ok()" ng-show="RequestStatus == 2">Finish</button>
+</div>

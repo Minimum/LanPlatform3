@@ -1,0 +1,67 @@
+﻿<ul class="breadcrumb" style="margin-left: 10px; margin-right: 10px">
+    <li><a href="#!/community">Community</a></li>
+    <li><a href="#!/community/leaderboards">Leaderboards</a></li>
+    <li><a href="#!/community/leaderboards/{{SectionUrl}}">{{SectionName}}</a></li>
+    <li class="active">{{LeaderboardName}}</li>
+</ul>
+
+<h1 style="padding-left: 20px">Leaderboard: {{LeaderboardName}}</h1><br/>
+
+<table class="table table-striped table-hover">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Player</th>
+        <th>Time</th>
+        <th>Score</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="entry in entries">
+        <td>{{entry.Place}}</td>
+        <td>{{entry.PlayerName}}/td>
+        <td>{{entry.Time}}</td>
+        <td>{{entry.Score}}</td>
+    </tr>
+    </tbody>
+</table>
+<div style="width: 100%;text-align:center">
+    <pagination
+        ng-model="currentPage"
+        total-items="entries.length"
+        max-size="maxsize"
+        boundary-links="true">
+    </pagination>
+</div>
+
+<br/>
+<div class="panel panel-warning" style="margin-left: 20px; margin-right: 20px;display:none">
+    <div class="panel-heading">
+        <h3 class="panel-title">Create Entry</h3>
+    </div>
+    <div class="panel-body">
+        <form class="form-horizontal">
+            <fieldset>
+                <div class="form-group">
+                    <label for="inputUser" class="col-lg-1 control-label">Player</label>
+                    <div class="col-lg-10">
+                        <input class="form-control" id="inputUser" placeholder="Player" type="text">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputScore" class="col-lg-1 control-label">Score</label>
+                    <div class="col-lg-10">
+                        <input class="form-control" id="inputScore" placeholder="Score" type="text">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-lg-10 col-lg-offset-1">
+                        <button type="reset" class="btn btn-default">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+

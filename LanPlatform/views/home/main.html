@@ -1,0 +1,90 @@
+﻿<ul class="breadcrumb" style="margin-left: 10px; margin-right: 10px">
+    <li class="active">Home</li>
+</ul>
+
+<div class="homeView" style="display: flex">
+    <div style="flex-grow: 1">
+        <div class="panel panel-default" style="width: 100%">
+            <div class="panel-heading">Current Status</div>
+            <div class="panel-body" style="text-align: center" ng-bind-html="NewsStatus.Content">
+
+            </div>
+        </div>
+    </div>
+
+    <div style="flex: 20px;flex-grow: 0"></div>
+
+    <div style="flex: 300px; flex-grow: 0">
+        <div class="panel panel-default" style="width: 100%">
+            <div class="panel-heading">Quick Links</div>
+            <div class="panel-body">
+                <a href="#!/library/loaners">Loaner Accounts</a><br/>
+                <a target="_blank" href="https://discord.gg/gQk7JjB">Discord</a><br/>
+                <a href="#!/">Download GLauncher</a><br/>
+                <a href="https://unifi.gslans.net:8443">UniFi Controller</a>
+            </div>
+        </div>
+
+        <div class="panel panel-default" style="width: 100%" ng-show="AccountLoaded">
+            <div class="panel-heading">Welcome back, {{AccountFirstName}}!</div>
+            <div class="panel-body">
+                TODO: account stuff here
+            </div>
+        </div>
+
+        <div class="panel panel-default" style="width: 100%">
+            <div class="panel-heading">Weather</div>
+            <div class="text-center" style="padding: 8px" ng-show="WeatherStatus == null">
+                <span class="loader loader-sm"></span>
+            </div>
+            <div style="padding:8px" ng-show="WeatherStatus != null">
+                <div>
+                    <div class="text-center" style="display: inline-block; margin-right: 8px">
+                        <i class="fa fa-exclamation-triangle" style="font-size:56px" aria-hidden="true"></i><br/>
+                        Sunny
+                    </div>
+                    <div style="display: inline-block;vertical-align: top">
+                        <span style="font-size:20px">88F</span><br/>
+                        <i class="fa fa-cloud" aria-hidden="true"></i> <span style="color:#9CDCFE">30%</span><br/>
+                    </div>
+                </div><br/>
+                
+                <div style="display:flex">
+                    <div style="flex: auto; padding-left:4px">
+                        <i class="fa fa-thermometer-empty" aria-hidden="true"></i>
+
+                        <span class="text-danger">94F</span>
+                        |
+                        <span class="text-primary">64F</span>
+                    </div>
+                    
+                    <div class="text-right" style="flex: auto;padding-right:4px">
+                         <span style="color: #9CDCFE">45%</span> <i class="fa fa-cloud" aria-hidden="true"></i>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <div class="text-center" style="display: inline-block;width:30%">
+                        1:00PM<br/>
+                        <i class="fa fa-exclamation-triangle" style="font-size:32px" aria-hidden="true"></i><br/>
+                        <span class="text-success">89F</span>
+                    </div>
+                    <div class="text-center" style="display:inline-block;width:30%">
+                        2:00PM<br />
+                        <i class="fa fa-exclamation-triangle" style="font-size:32px" aria-hidden="true"></i><br />
+                        <span class="text-success">90F</span>
+                    </div>
+                    <div class="text-center" style="display:inline-block;width:30%">
+                        3:00PM<br />
+                        <i class="fa fa-exclamation-triangle" style="font-size:32px" aria-hidden="true"></i><br />
+                        <span class="text-success">91F</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+
+</div>
+ 

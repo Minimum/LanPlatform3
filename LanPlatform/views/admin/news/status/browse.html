@@ -1,0 +1,59 @@
+﻿<ul class="breadcrumb" style="margin-left: 10px; margin-right: 10px">
+    <li>Administration</li>
+    <li>News</li>
+    <li class="active">Browse Status</li>
+</ul>
+
+<div class="verticalNavArea">
+    <div class="panel panel-default verticalNavAreaNav">
+        <div class="panel-heading">Navigation</div>
+        <div class="panel-body" ng-controller="AdminNewsNav">
+            <div ng-include="template"></div>
+        </div>
+    </div>
+    <div class="verticalNavAreaDivider"></div>
+    <div class="verticalNavAreaContent">
+        <div style="text-align: center" ng-show="LoadStatus == 0">
+            <div class="loader loader-lg"></div> <span style="font-size: 42px; vertical-align: middle; margin-left: 15px">Loading</span>
+        </div>
+        
+        <div class="alert alert-danger" ng-show="LoadStatus == 2">
+            <h4>Error!</h4>
+            <p>There has been an issue retreiving data from the server.</p>
+            <p>Message: {{ErrorMessage}}</p>
+        </div>
+        
+        <table class="table table-striped table-hover" ng-show="LoadStatus == 1">
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Commands</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="status in Statuses">
+                <td>{{status.Id}}</td>
+                <td><a ng-href="#!admin/news/status/view/{{status.Id}}" style="text-decoration: none">{{status.Title}}</a></td>
+                <td>{{status.Type}}</td>
+                <td>commands here</td>
+            </tr>
+            </tbody>
+        </table>
+        
+        <div style="width: 100%;text-align:center" ng-show="LoadStatus == 1">
+            <ul class="pagination">
+                <li ng-class="{disabled: 'PreviousPage.Active==false'}">
+                    <a ng-href="{{PreviousPage.Text}}">&laquo;</a>
+                </li>
+                <li ng-repeat="page in Pages" ng-class="{active: 'page.Active==true'}">
+                    <a ng-href="#!admin/news/status/browse/{{page.Text}}">{{page.Text}}</a>
+                </li>
+                <li ng-class="{disabled: 'NextPage.Active==false'}">
+                    <a ng-href="{{NextPage.Text}}">&raquo;</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div> 

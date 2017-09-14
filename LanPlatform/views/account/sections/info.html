@@ -1,0 +1,6 @@
+﻿<div style="float: right">
+    <a class="btn btn-primary" ng-click="ShowEditInfo()" ng-show="AllowEditing">Edit Account Info</a>
+</div>
+<h3>Total Events <span style="font-size: 20px; color: #b7b7b7; margin-left: 2px">{{Account.TotalEvents}}</span> <span style="margin-left: 24px; font-size: 18px">Physical LANs <span style="color: #b7b7b7; margin-left: 2px; margin-right: 24px">{{Account.TotalEvents - Account.RemoteEvents}}</span> Remote LANs <span style="margin-left: 2px; color: #b7b7b7">{{Account.RemoteEvents}}</span></span></h3>
+<h3>Last Active <span style="font-size: 20px; color: #b7b7b7; margin-left: 2px">{{Account.GetLastActiveTime()}}</span></h3>
+<h3>Last Event <span style="font-size: 20px; color: #b7b7b7; margin-left: 2px">{{LastEventField()}}</span></h3>

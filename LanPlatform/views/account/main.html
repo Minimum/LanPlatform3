@@ -1,0 +1,66 @@
+﻿<ul class="breadcrumb" style="margin-left: 10px; margin-right: 10px">
+    <li><a href="#!/community">Community</a></li>
+    <li>Account</li>
+    <li class="active" ng-show="AccountLoaded == 1">#{{Account.Id}} - {{Account.DisplayName}}</li>
+</ul>
+
+<div style="margin-left: 10px; margin-right: 10px; text-align: center" ng-hide="AccountLoaded != null">
+    <div class="loader loader-lg"></div> <span style="font-size: 42px; vertical-align: middle; margin-left: 15px">Loading Account</span>
+</div>
+
+<div style="margin-left: 10px; margin-right: 10px; text-align: center" ng-show="AccountLoaded == 2">
+    <h1>Specified account does not exist!</h1>
+</div>
+
+<div style="margin-left: 10px; margin-right:10px" ng-show="AccountLoaded == 1">
+    <div style="margin-bottom: 10px">
+        <div style="display: inline-block; vertical-align: top">
+            <img ng-src="{{Account.AvatarUrl}}" ng-click="ChangeAvatar()" style="margin-right: 12px; width: 94px"/>
+        </div>
+
+        <div style="display: inline-block">
+            <h2 style="margin-top: 0px; font-size: 40px">
+                {{Account.DisplayName}}
+            </h2>
+            <h4>{{Account.FirstName}} {{Account.LastName}}</h4>
+            <span ng-style="OnlineStatusColor" style="font-size: 24px"><i class="fa fa-wifi" aria-hidden="true"></i> <span style="font-size: 16px">{{Account.IsOnline ? "Online" : "Offline"}}</span></span>
+        </div>
+
+        <div style="display: inline-block; float:right">
+            
+
+        </div>
+    </div>
+
+    <uib-tabset active="active">
+        <uib-tab index="0">
+            <uib-tab-heading>
+                <i class="fa fa-user" style="margin-right: 4px" aria-hidden="true"></i>
+                Info
+            </uib-tab-heading>
+            <div ng-controller="AccountViewInfo">
+                <div ng-include="template"></div>
+            </div>
+        </uib-tab>
+        <uib-tab index="1">
+            <uib-tab-heading>
+                <i class="fa fa-trophy" style="margin-right: 4px" aria-hidden="true"></i>
+                Awards
+            </uib-tab-heading>
+            <div ng-controller="AccountViewAwards">
+                <div ng-include="template"></div>
+            </div>
+        </uib-tab>
+        <uib-tab index="2">
+            <uib-tab-heading>
+                <i class="fa fa-bar-chart" style="margin-right: 4px" aria-hidden="true"></i>
+                Stats
+            </uib-tab-heading>
+            <div ng-controller="AccountViewStats">
+                <div ng-include="template"></div>
+            </div>
+        </uib-tab>
+    </uib-tabset>
+</div>
+
+
