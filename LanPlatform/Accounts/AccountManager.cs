@@ -486,6 +486,22 @@ namespace LanPlatform.Accounts
             return accountFlags;
         }
 
+        public List<UserPermission> GetAccountFlags(UserAccount account, String scope)
+        {
+            return GetAccountFlags(account.Id, scope);
+        }
+
+        public List<UserPermission> GetAccountFlags(long accountId, String scope)
+        {
+            return Context.RoleFlag.Where(
+                        flag =>
+                            Context.AccountRole.Where(
+                                role => role.User == accountId).Select(
+                                role => role.Role).Contains(flag.Id)
+                                && flag.Scope.Equals(scope, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+        }
+
         public void AddAccessRecord(UserAccount account, String flag, String scope, bool success)
         {
             AccessRecord record = new AccessRecord();
@@ -562,6 +578,13 @@ namespace LanPlatform.Accounts
         public List<UserRoleAccess> GetAccountRoleAccess(long accountId)
         {
             return Context.AccountRole.Where(s => s.User == accountId).ToList();
+        }
+
+        public void AddAccountRoleAccess(UserRoleAccess access)
+        {
+            Context.AccountRole.Add(access);
+
+            return;
         }
 
         public void AddPermission(UserPermission permission)

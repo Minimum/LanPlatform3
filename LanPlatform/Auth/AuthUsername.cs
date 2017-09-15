@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -7,6 +8,7 @@ namespace LanPlatform.Auth
     public class AuthUsername : AuthInfo
     {
         public String Username { get; set; }
+        [NotMapped]
         public String Password { get; set; }
         public String CryptPassword { get; set; }
         public String Salt { get; set; }
@@ -31,7 +33,6 @@ namespace LanPlatform.Auth
             AuthUsername auth = new AuthUsername();
 
             auth.Username = username;
-            auth.Password = password;
             auth.Salt = GenerateSalt();
             auth.CryptPassword = EncryptPassword(password, auth.Salt);
 

@@ -362,7 +362,32 @@ namespace LanPlatform.Controllers
                 if (instance.Accounts.CheckAccess(AccountManager.FlagEditAccountAdvanced) 
                     && (!target.Root || target.Id == instance.LocalAccount.Id))
                 {
-                    // check if role assigned, add role
+                    List<UserRole> roles = instance.Accounts.GetRolesByAccount(id);
+
+                    if (roles.All(s => s.Id != roleId))
+                    {
+                        UserRoleAccess access = new UserRoleAccess();
+
+                        access.Role = roleId;
+                        access.User = id;
+
+                        instance.Accounts.AddAccountRoleAccess(access);
+
+                        try
+                        {
+                            instance.Context.SaveChanges();
+
+                            instance.SetData(true, "bool");
+                        }
+                        catch (Exception e)
+                        {
+                            instance.SetError("SAVE_ERROR");
+                        }
+                    }
+                    else
+                    {
+                        instance.SetData(true, "bool");
+                    }
                 }
                 else
                 {
@@ -458,9 +483,59 @@ namespace LanPlatform.Controllers
             return instance.ToResponse();
         }
 
-        // GET		/{id}/access/{scope}
+        [HttpGet]
+        [Route("{id}/access/{scope}")]
+        public HttpResponseMessage GetUserScopePermissions(long id, String scope)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            UserAccount target = instance.Accounts.GetAccount(id);
 
-        // GET		/{id}/access/{scope}/{flag}
+            if (target != null)
+            {
+                if (instance.Accounts.IsAccountVisible(target))
+                {
+                    List<UserPermission> permissions = instance.Accounts.GetAccountFlags(id, scope);
+
+                    instance.SetData(UserPermissionDto.ConvertList(permissions), "UserPermissionList");
+                }
+                else
+                {
+                    instance.SetError("INVALID_ACCOUNT");
+                }
+            }
+            else
+            {
+                instance.SetError("INVALID_ACCOUNT");
+            }
+
+            return instance.ToResponse();
+        }
+
+        [HttpGet]
+        [Route("{id}/access/{scope}/{flag}")]
+        public HttpResponseMessage GetUserSinglePermission(long id, String scope, String flag)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            UserAccount target = instance.Accounts.GetAccount(id);
+
+            if (target != null)
+            {
+                if (instance.Accounts.IsAccountVisible(target))
+                {
+                    instance.SetData(instance.Accounts.CheckAccess(target, flag, scope), "bool");
+                }
+                else
+                {
+                    instance.SetError("INVALID_ACCOUNT");
+                }
+            }
+            else
+            {
+                instance.SetError("INVALID_ACCOUNT");
+            }
+
+            return instance.ToResponse();
+        }
 
         // Account auth (username) actions
 
@@ -587,33 +662,110 @@ namespace LanPlatform.Controllers
         }
 
         [HttpPost]
-        [Route("{id}/auth/user/{authId}")]
-        public HttpResponseMessage EditUsername(long id, long authId, [FromBody] AuthUsernameDto username)
+        [Route("{id}/auth/user/{username}")]
+        public HttpResponseMessage EditUsername(long id, String name, [FromBody] AuthUsernameDto username)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
-            UserAccount localAccount = instance.LocalAccount;
 
             // Check if request is valid
-            if (id > 0 && username.Username.Length > 0 && username.Password.Length > 0)
+            if (id > 0 && username.Password.Length > 0)
             {
-                // Check user's access
-                if (localAccount != null && instance.Accounts.CheckAccess(localAccount, AccountManager.FlagEditUsername))
-                {
-                    UserAccount targetAccount = instance.Accounts.GetAccount(id);
-                }
+                UserAccount target = instance.Accounts.GetAccount(id);
 
+                if (target != null)
+                {
+                    // Check user's access
+                    if (id == instance.LocalAccount?.Id ||
+                        instance.Accounts.CheckAccess(AccountManager.FlagEditUsername) && !target.Root)
+                    {
+                        AuthUsername targetUsername = instance.Accounts.GetUsername(name);
+
+                        if (targetUsername?.Account == id)
+                        {
+                            targetUsername.Salt = AuthUsername.GenerateSalt();
+                            targetUsername.CryptPassword =
+                                AuthUsername.EncryptPassword(username.Password, targetUsername.Salt);
+
+                            // TODO: Log action
+
+                            try
+                            {
+                                instance.Context.SaveChanges();
+
+                                instance.SetData(true, "bool");
+                            }
+                            catch (Exception e)
+                            {
+                                instance.SetError("SAVE_ERROR");
+                            }
+                        }
+                        else
+                        {
+                            instance.SetError("INVALID_USERNAME");
+                        }
+                    }
+                    else
+                    {
+                        instance.SetError("ACCESS_DENIED");
+                    }
+                }
+                else
+                {
+                    instance.SetError("INVALID_ACCOUNT");
+                }
+            }
+            else
+            {
+                instance.SetError("INVALID_REQUEST");
             }
 
             return instance.ToResponse();
         }
 
         [HttpDelete]
-        [Route("{id}/auth/user/{authId}")]
-        public HttpResponseMessage DeleteUsername(long id, long authId)
+        [Route("{id}/auth/user/{username}")]
+        public HttpResponseMessage DeleteUsername(long id, String name)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
-            // TODO: This
+            UserAccount target = instance.Accounts.GetAccount(id);
+
+            if (target != null)
+            {
+                if (id == instance.LocalAccount?.Id ||
+                    instance.Accounts.CheckAccess(AccountManager.FlagEditUsername) && !target.Root)
+                {
+                    AuthUsername username = instance.Accounts.GetUsername(name);
+
+                    if (username?.Account == id)
+                    {
+                        instance.Accounts.RemoveUsername(username);
+
+                        try
+                        {
+                            instance.Context.SaveChanges();
+
+                            instance.SetData(true, "bool");
+                        }
+                        catch (Exception e)
+                        {
+                            instance.SetError("SAVE_ERROR");
+                        }
+                    }
+                    else
+                    {
+                        instance.SetError("INVALID_USERNAME");
+                    }
+                }
+                else
+                {
+                    instance.SetError("ACCESS_DENIED");
+                }
+            }
+            else
+            {
+                instance.SetError("INVALID_ACCOUNT");
+            }
 
             return instance.ToResponse();
         }
@@ -678,7 +830,34 @@ namespace LanPlatform.Controllers
             return instance.ToResponse();
         }
 
-        // PUT		/{id}/auth/session
+        [HttpPut]
+        [Route("account/{id}/auth/session")]
+        public HttpResponseMessage CreateSession(long id)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+
+            if (id == instance.LocalAccount?.Id)
+            {
+                AuthSession session = instance.Accounts.CreateSession(instance.LocalAccount);
+
+                try
+                {
+                    instance.Context.SaveChanges();
+
+                    instance.SetData(new AuthSessionDto(session), "AuthSession");
+                }
+                catch (Exception e)
+                {
+                    instance.SetError("SAVE_ERROR");
+                }
+            }
+            else
+            {
+                instance.SetError("ACCESS_DENIED");
+            }
+
+            return instance.ToResponse();
+        }
 
         [HttpDelete]
         [Route("account/{id}/auth/session/{authId}")]
@@ -686,12 +865,40 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
-            // TODO: This
+            if(id == instance.LocalAccount?.Id)
+            {
+                AuthSession session = instance.Accounts.GetSession(authId);
+
+                if (session?.Account == id)
+                {
+                    instance.Accounts.RemoveSession(session);
+
+                    try
+                    {
+                        instance.Context.SaveChanges();
+
+                        instance.SetData(true, "bool");
+                    }
+                    catch (Exception e)
+                    {
+                        instance.SetError("SAVE_ERROR");
+                    }
+                }
+                else
+                {
+                    instance.SetError("INVALID_SESSION");
+                }
+            }
+            else
+            {
+                instance.SetError("ACCESS_DENIED");
+            }
 
             return instance.ToResponse();
         }
 
         // Account auth (challenge) actions
+        // This is a feature planned for the future to allow outside services such as game servers to properly authenticate accounts
 
         // GET		/{id}/auth/challenge
 
