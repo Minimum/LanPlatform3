@@ -23,6 +23,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -1071,6 +1072,8 @@
     <Compile Include="DTO\Apps\LoanerAccountDto.cs" />
     <Compile Include="DTO\Content\ContentItemDto.cs" />
     <Compile Include="DTO\EditableGabionDto.cs" />
+    <Compile Include="DTO\Events\LanEventDto.cs" />
+    <Compile Include="DTO\Events\LanEventGuestDto.cs" />
     <Compile Include="DTO\GabionDto.cs" />
     <Compile Include="DTO\News\NewsStatusDto.cs" />
     <Compile Include="Engine\EngineUtil.cs" />

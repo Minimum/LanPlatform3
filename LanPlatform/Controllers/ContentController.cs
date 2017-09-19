@@ -60,7 +60,7 @@ namespace LanPlatform.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public HttpResponseMessage GetContentInfoById(long id)
+        public HttpResponseMessage GetContentInfo(long id)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             ContentManager contentManager = new ContentManager(instance);
@@ -97,7 +97,7 @@ namespace LanPlatform.Controllers
 
         [HttpGet]
         [Route("{id}/data")]
-        public HttpResponseMessage GetContentDataById(long id)
+        public HttpResponseMessage GetContentData(long id)
         {
             HttpResponseMessage response = null;
             AppInstance instance = new AppInstance(Request, HttpContext.Current);

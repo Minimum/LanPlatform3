@@ -12,6 +12,14 @@ namespace LanPlatform.Events
 {
     public class LanEventManager
     {
+        public const String FlagCreateEvent = "LanEventCreate";
+        public const String FlagEditEvent = "LanEventEdit";
+        public const String FlagDeleteEvent = "LanEventDelete";
+
+        public const String FlagCreateGuest = "LanEventGuestCreate";
+        public const String FlagEditGuest = "LanEventGuestEdit";
+        public const String FlagDeleteGuest = "LanEventGuestDelete";
+
         public const String SettingCurrentEvent = "CurrentEvent";
 
         protected PlatformContext Context;
@@ -46,16 +54,6 @@ namespace LanPlatform.Events
             LanEvent lanEvent = Context.LanEvent.SingleOrDefault(s => s.Id == 0);
 
             return;
-        }
-
-        public LanEvent GetEventById(long id)
-        {
-            return Context.LanEvent.SingleOrDefault(s => s.Id == id);
-        }
-
-        public LanEventGuest GetEventGuest(long eventId, long accountId)
-        {
-            return Context.LanEventGuest.SingleOrDefault(s => s.Account == accountId && s.Event == eventId);
         }
 
         public static void PostAuthTasks(UserAccount account, AppInstance instance)
@@ -99,7 +97,7 @@ namespace LanPlatform.Events
                         account.TotalEvents++;
                         account.LastEvent = eventId;
                     }
-                    else if(guestEntry.Arrived == 0)
+                    else if (guestEntry.Arrived == 0)
                     {
                         // If entry is marked as invited but not arrived, set to arrived
                         guestEntry.Arrived = EngineUtil.CurrentTime;
@@ -113,5 +111,41 @@ namespace LanPlatform.Events
 
             return;
         }
+
+        // Events
+
+        public LanEvent GetEventById(long id)
+        {
+            return Context.LanEvent.SingleOrDefault(s => s.Id == id);
+        }
+
+        public void AddEvent(LanEvent lanEvent)
+        {
+            Context.LanEvent.Add(lanEvent);
+
+            return;
+        }
+
+        public void RemoveEvent(LanEvent lanEvent)
+        {
+            Context.LanEvent.Remove(lanEvent);
+
+            return;
+        }
+
+        // Event Guests
+
+        public LanEventGuest GetEventGuest(long eventId, long accountId)
+        {
+            return Context.LanEventGuest.SingleOrDefault(s => s.Account == accountId && s.Event == eventId);
+        }
+
+        public void AddEventGuest(LanEventGuest guest)
+        {
+            Context.LanEventGuest.Add(guest);
+
+            return;
+        }
+
     }
 }

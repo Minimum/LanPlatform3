@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using LanPlatform.Database;
 
 namespace LanPlatform.Events
@@ -10,6 +11,7 @@ namespace LanPlatform.Events
         public long StartTime { get; set; }
         public long EndTime { get; set; }
 
+        [NotMapped]
         public List<LanEventGuest> GuestRecords { get; set; }
 
         public LanEvent()
