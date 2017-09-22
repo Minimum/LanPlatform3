@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Contexts;
 using System.Runtime.Remoting.Messaging;
@@ -65,6 +66,8 @@ namespace LanPlatform.Events
 
         protected void PostAuth(UserAccount account)
         {
+            // TODO: Remove this, create checkin API action
+
             PlatformSetting currentEvent = Instance.Settings.GetSettingByName(SettingCurrentEvent);
 
             long eventId = currentEvent.ToInt64();
@@ -135,6 +138,16 @@ namespace LanPlatform.Events
 
         // Event Guests
 
+        public List<LanEventGuest> GetEventGuests(LanEvent lanEvent)
+        {
+            return GetEventGuests(lanEvent.Id);
+        }
+
+        public List<LanEventGuest> GetEventGuests(long eventId)
+        {
+            return Context.LanEventGuest.Where(s => s.Event == eventId).ToList();
+        }
+
         public LanEventGuest GetEventGuest(long eventId, long accountId)
         {
             return Context.LanEventGuest.SingleOrDefault(s => s.Account == accountId && s.Event == eventId);
@@ -143,6 +156,13 @@ namespace LanPlatform.Events
         public void AddEventGuest(LanEventGuest guest)
         {
             Context.LanEventGuest.Add(guest);
+
+            return;
+        }
+
+        public void RemoveEventGuest(LanEventGuest guest)
+        {
+            Context.LanEventGuest.Remove(guest);
 
             return;
         }
