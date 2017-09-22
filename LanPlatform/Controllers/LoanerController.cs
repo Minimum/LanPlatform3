@@ -73,7 +73,7 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             AppManager apps = new AppManager(instance);
 
-            instance.Data = new LoanerAccountDto(apps.GetLoanerAccountById(id));
+            instance.Data = new LoanerAccountDto(apps.GetLoanerAccount(id));
 
             return instance.ToResponse();
         }
@@ -89,7 +89,7 @@ namespace LanPlatform.Controllers
             {
                 if (instance.Accounts.CheckAccess(AppManager.FlagLoanerEdit))
                 {
-                    LoanerAccount dataLoaner = apps.GetLoanerAccountById(id);
+                    LoanerAccount dataLoaner = apps.GetLoanerAccount(id);
 
                     if (dataLoaner != null)
                     {
@@ -118,12 +118,46 @@ namespace LanPlatform.Controllers
 
         [HttpDelete]
         [Route("{id}")]
-        public HttpResponseMessage DeleteLoaner()
+        public HttpResponseMessage DeleteLoaner(long id)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             AppManager apps = new AppManager(instance);
 
-            // TODO
+            if (instance.Accounts.CheckAccess(AppManager.FlagLoanerDelete))
+            {
+                LoanerAccount loaner = apps.GetLoanerAccount(id);
+
+                if (loaner != null)
+                {
+                    List<LoanerApp> loanerApps = apps.GetLoanerApps(loaner);
+
+                    foreach (LoanerApp app in loanerApps)
+                    {
+                        apps.RemoveLoanerApp(app);
+                    }
+
+                    apps.RemoveLoanerAccount(loaner);
+
+                    try
+                    {
+                        instance.Context.SaveChanges();
+
+                        instance.SetData(true, "bool");
+                    }
+                    catch (Exception e)
+                    {
+                        instance.SetError("SAVE_ERROR");
+                    }
+                }
+                else
+                {
+                    instance.SetData(true, "bool");
+                }
+            }
+            else
+            {
+                instance.SetError("ACCESS_DENIED");
+            }
 
             return instance.ToResponse();
         }
@@ -139,7 +173,7 @@ namespace LanPlatform.Controllers
 
             if (instance.Accounts.CheckAccess(AppManager.FlagLoanerEdit))
             {
-                LoanerAccount account = apps.GetLoanerAccountById(id);
+                LoanerAccount account = apps.GetLoanerAccount(id);
 
                 if (account != null)
                 {
@@ -194,7 +228,7 @@ namespace LanPlatform.Controllers
 
             if (instance.Accounts.CheckAccess(AppManager.FlagLoanerEdit))
             {
-                LoanerAccount loaner = apps.GetLoanerAccountById(id);
+                LoanerAccount loaner = apps.GetLoanerAccount(id);
 
                 if (loaner != null)
                 {
@@ -244,7 +278,7 @@ namespace LanPlatform.Controllers
             }
             else if (id > 0)
             {
-                LoanerAccount loaner = apps.GetLoanerAccountById(id);
+                LoanerAccount loaner = apps.GetLoanerAccount(id);
 
                 if (loaner == null)
                 {
@@ -288,7 +322,7 @@ namespace LanPlatform.Controllers
             }
             else if (id > 0)
             {
-                LoanerAccount loaner = apps.GetLoanerAccountById(id);
+                LoanerAccount loaner = apps.GetLoanerAccount(id);
 
                 if (loaner == null)
                 {
@@ -329,7 +363,7 @@ namespace LanPlatform.Controllers
 
             if (localAccount != null && instance.Accounts.CheckAccess(localAccount, AppManager.FlagLoanerSteamCode))
             {
-                LoanerAccount account = apps.GetLoanerAccountById(id);
+                LoanerAccount account = apps.GetLoanerAccount(id);
 
                 if (account != null)
                 {

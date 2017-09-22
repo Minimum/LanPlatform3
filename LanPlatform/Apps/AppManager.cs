@@ -12,7 +12,9 @@ namespace LanPlatform.Apps
     public class AppManager
     {
         public const String FlagAppEdit = "AppEdit";
+        public const String FlagLoanerCreate = "AppLoanerCreate";
         public const String FlagLoanerEdit = "AppLoanerEdit";
+        public const String FlagLoanerDelete = "AppLoanerDelete";
         public const String FlagLoanerCheckout = "AppLoanerCheckout";
         public const String FlagLoanerSteamCode = "AppLoanerSteamCode";
 
@@ -32,6 +34,106 @@ namespace LanPlatform.Apps
             
         }
 
+        // Apps 
+
+        public App GetAppById(long id)
+        {
+            return Context.App.FirstOrDefault(s => s.Id == id);
+        }
+
+        public List<App> GetApps()
+        {
+            return Context.App.Where(s => s.Id > 0).ToList();
+        }
+
+        public List<App> GetAppSearch(SearchAppRequest request)
+        {
+            request.SanityCheck();
+
+            long startPos = (request.Page - 1) * request.PageSize;
+
+            IQueryable<App> query = Context.App.Where(s => s.Id > 0);
+
+            // Sort
+            switch (request.SortBy)
+            {
+                case SearchAppSort.AppType:
+                    {
+                        query = request.SortDescending
+                            ? query.OrderByDescending(s => s.Type).ThenBy(s => s.Id)
+                            : query.OrderBy(s => s.Type).ThenBy(s => s.Id);
+
+                        break;
+                    }
+
+                case SearchAppSort.Description:
+                    {
+                        query = request.SortDescending
+                            ? query.OrderByDescending(s => s.Description).ThenBy(s => s.Id)
+                            : query.OrderBy(s => s.Description).ThenBy(s => s.Id);
+
+                        break;
+                    }
+
+                case SearchAppSort.Title:
+                    {
+                        query = request.SortDescending
+                            ? query.OrderByDescending(s => s.Title).ThenBy(s => s.Id)
+                            : query.OrderBy(s => s.Title).ThenBy(s => s.Id);
+
+                        break;
+                    }
+
+                case SearchAppSort.DownloadType:
+                    {
+                        query = request.SortDescending
+                            ? query.OrderByDescending(s => s.DownloadType).ThenBy(s => s.Id)
+                            : query.OrderBy(s => s.DownloadType).ThenBy(s => s.Id);
+
+                        break;
+                    }
+
+                default:
+                    {
+                        query = request.SortDescending
+                            ? query.OrderByDescending(s => s.Id)
+                            : query.OrderBy(s => s.Id);
+
+                        break;
+                    }
+            }
+
+            while (startPos > Int32.MaxValue)
+            {
+                query = query.Skip(Int32.MaxValue);
+
+                startPos -= Int32.MaxValue;
+            }
+
+            return query.Skip((int)startPos).Take(request.PageSize).AsNoTracking().ToList();
+        }
+
+        public long GetAppTotal()
+        {
+            return Context.App.LongCount();
+        }
+
+        public void AddApp(App app)
+        {
+            Context.App.Add(app);
+
+            return;
+        }
+
+        public void RemoveApp(App app)
+        {
+            Context.App.Remove(app);
+
+            return;
+        }
+
+        // Loaner Accounts
+
         public List<LoanerAccount> GetLoanerAccounts()
         {
             List<LoanerAccount> accounts = Context.LoanerAccount.Where(s => s.Id > 0).ToList();
@@ -50,7 +152,7 @@ namespace LanPlatform.Apps
             return accounts;
         }
 
-        public LoanerAccount GetLoanerAccountById(long id)
+        public LoanerAccount GetLoanerAccount(long id)
         {
             LoanerAccount account = Context.LoanerAccount.FirstOrDefault(s => s.Id == id);
 
@@ -100,6 +202,20 @@ namespace LanPlatform.Apps
             return;
         }
 
+        public void RemoveLoanerAccount(LoanerAccount account)
+        {
+            Context.LoanerAccount.Remove(account);
+
+            return;
+        }
+
+        // Loaner Apps
+
+        public List<LoanerApp> GetLoanerApps(LoanerAccount account)
+        {
+            return Context.LoanerApp.Where(s => s.Account == account.Id).ToList();
+        }
+
         public LoanerApp GetLoanerApp(LoanerAccount account, long appId)
         {
             return GetLoanerApp(account.Id, appId);
@@ -123,101 +239,6 @@ namespace LanPlatform.Apps
 
             return;
         }
-
-        public App GetAppById(long id)
-        {
-            return Context.App.FirstOrDefault(s => s.Id == id);
-        }
-
-        public List<App> GetApps()
-        {
-            return Context.App.Where(s => s.Id > 0).ToList();
-        }
-
-        public List<App> GetAppSearch(SearchAppRequest request)
-        {
-            request.SanityCheck();
-
-            long startPos = (request.Page - 1) * request.PageSize;
-
-            IQueryable<App> query = Context.App.Where(s => s.Id > 0);
-
-            // Sort
-            switch (request.SortBy)
-            {
-                case SearchAppSort.AppType:
-                {
-                    query = request.SortDescending
-                        ? query.OrderByDescending(s => s.Type).ThenBy(s => s.Id)
-                        : query.OrderBy(s => s.Type).ThenBy(s => s.Id);
-
-                    break;
-                }
-
-                case SearchAppSort.Description:
-                {
-                    query = request.SortDescending
-                        ? query.OrderByDescending(s => s.Description).ThenBy(s => s.Id)
-                        : query.OrderBy(s => s.Description).ThenBy(s => s.Id);
-
-                    break;
-                }
-
-                case SearchAppSort.Title:
-                {
-                    query = request.SortDescending
-                        ? query.OrderByDescending(s => s.Title).ThenBy(s => s.Id)
-                        : query.OrderBy(s => s.Title).ThenBy(s => s.Id);
-
-                    break;
-                }
-
-                case SearchAppSort.DownloadType:
-                {
-                    query = request.SortDescending
-                        ? query.OrderByDescending(s => s.DownloadType).ThenBy(s => s.Id)
-                        : query.OrderBy(s => s.DownloadType).ThenBy(s => s.Id);
-
-                    break;
-                }
-
-                default:
-                {
-                    query = request.SortDescending
-                        ? query.OrderByDescending(s => s.Id)
-                        : query.OrderBy(s => s.Id);
-
-                    break;
-                }
-            }
-
-            while (startPos > Int32.MaxValue)
-            {
-                query = query.Skip(Int32.MaxValue);
-
-                startPos -= Int32.MaxValue;
-            }
-
-            return query.Skip((int)startPos).Take(request.PageSize).AsNoTracking().ToList();
-        }
-
-        public long GetAppTotal()
-        {
-            return Context.App.LongCount();
-        }
-
-        public void AddApp(App app)
-        {
-            Context.App.Add(app);
-
-            return;
-        }
-
-        public void RemoveApp(App app)
-        {
-            Context.App.Remove(app);
-
-            return;
-        }
+        
     }
 }
