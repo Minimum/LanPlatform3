@@ -66,6 +66,11 @@
     vertical-align: inherit;
 }
 
+.navButton:focus:not(:hover) {
+    color: inherit !important;
+    background-color: inherit;
+}
+
 .navButtonStatus
 {
     display:block;
@@ -220,6 +225,10 @@
 
 .sideNav {
     margin-left: 8px;
+}
+
+.lanButton:focus:not(:hover) {
+    text-decoration: none;
 }
 
 .lanPageArea {

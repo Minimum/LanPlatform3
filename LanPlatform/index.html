@@ -16,147 +16,150 @@
     <script src="/scripts/angular-route.min.js"></script>
     <script src="/scripts/angular-sanitize.min.js"></script>
     <script src="/scripts/bootstrap.min.js"></script>
-    <script src="/scripts/angular-ui/ui-bootstrap.min.js"></script>
+    <script src="/scripts/angular-ui/ui-bootstrap-tpls.min.js"></script>
     <script src="/scripts/rzslider.min.js"></script>
     <script src="/scripts/lanplatform.js"></script>
 </head>
 <body>
-<nav class="navbar navbar-fixed-top navbar-default" style="z-index: 1000">
-    <div class="container-fluid navContainer">
-        <!-- Title -->
-        <div class="navTitle">
-            GS Lans Platform
-        </div>
+    <nav class="navbar navbar-fixed-top navbar-default" style="z-index: 1000">
+        <div class="container-fluid navContainer">
+            <!-- Title -->
+            <div class="navTitle">
+                GS Lans Platform
+            </div>
 
-        <!-- Section Nav-->
-        <ul class="nav navbar-nav" ng-controller="NavButtonController">
-            <!-- Home Nav -->
-            <li ng-show="Buttons['home'].Enabled">
-                <a href="#!/">Home</a>
-                <div class="navButtonStatus" ng-class="Buttons['home'].Status"></div>
-            </li>
+            <!-- Section Nav-->
+            <ul class="nav navbar-nav" ng-controller="NavButtonController">
+                <!-- Home Nav -->
+                <li ng-show="Buttons['home'].Enabled">
+                    <a class="navButton" href="#!/">Home</a>
+                    <div class="navButtonStatus" ng-class="Buttons['home'].Status"></div>
+                </li>
 
-            <!-- Library Nav -->
-            <li class="dropdown" ng-show="Buttons['library'].Enabled">
-                <a class="dropdown-toggle" href="#!/library/games">Library</a>
-                <div class="navButtonStatus" ng-class="Buttons['library'].Status"></div>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a href="#!/library/apps">
-                            <i class="fa fa-cog faPadL" aria-hidden="true"></i>
-                            Apps
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#!/library/loaners">
-                            <i class="fa fa-keyboard-o faPadL" aria-hidden="true"></i>
-                            Loaner Accounts
-                        </a>
-                    </li>
-                </ul>
-            </li>
+                <!-- Library Nav -->
+                <li class="dropdown" ng-show="Buttons['library'].Enabled">
+                    <a class="dropdown-toggle navButton" href="#!/library/apps">Library</a>
+                    <div class="navButtonStatus" ng-class="Buttons['library'].Status"></div>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="navButton" href="#!/library/apps">
+                                <i class="fa fa-cog faPadL" aria-hidden="true"></i>
+                                Apps
+                            </a>
+                        </li>
+                        <li>
+                            <a class="navButton" href="#!/library/loaners">
+                                <i class="fa fa-keyboard-o faPadL" aria-hidden="true"></i>
+                                Loaner Accounts
+                            </a>
+                        </li>
+                    </ul>
+                </li>
 
-            <!-- Ambience Nav -->
-            <li class="dropdown" ng-show="Buttons['ambience'].Enabled">
-                <a href="#!/ambience">Ambience</a>
-                <div id="navStatusAmbience" class="navButtonStatus" ng-class="Buttons['ambience'].Status"></div>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a href="#!/ambience/music">
-                            <i class="fa fa-music faPadL" aria-hidden="true"></i>
-                            Music
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#!/ambience/lighting">
-                            <i class="fa fa-lightbulb-o faPadL" aria-hidden="true"></i>
-                            Lighting
-                        </a>
-                    </li>
-                </ul>
-            </li>
+                <!-- Ambience Nav -->
+                <li class="dropdown" ng-show="Buttons['ambience'].Enabled">
+                    <a class="navButton" href="#!/ambience">Ambience</a>
+                    <div id="navStatusAmbience" class="navButtonStatus" ng-class="Buttons['ambience'].Status"></div>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="navButton" href="#!/ambience/music">
+                                <i class="fa fa-music faPadL" aria-hidden="true"></i>
+                                Music
+                            </a>
+                        </li>
+                        <li>
+                            <a class="navButton" href="#!/ambience/lighting">
+                                <i class="fa fa-lightbulb-o faPadL" aria-hidden="true"></i>
+                                Lighting
+                            </a>
+                        </li>
+                    </ul>
+                </li>
 
-            <!-- Community Nav -->
-            <li class="dropdown" ng-show="Buttons['community'].Enabled">
-                <a class="dropdown-toggle" href="#!/community/users">Community</a>
-                <div id="navStatusCommunity" class="navButtonStatus" ng-class="Buttons['community'].Status"></div>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a href="#!/community/users">
-                            <i class="fa fa-users faPadL" aria-hidden="true"></i>
-                            Users
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#!/community/chat">
-                            <i class="fa fa-comments-o faPadL" aria-hidden="true"></i>
-                            Chat
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#!/community/leaderboards">
-                            <i class="fa fa-bar-chart faPadL" aria-hidden="true"></i>
-                            Leaderboards
-                        </a>
-                    </li>
-                </ul>
-            </li>
+                <!-- Community Nav -->
+                <li class="dropdown" ng-show="Buttons['community'].Enabled">
+                    <a class="dropdown-toggle navButton" href="#!/community/users">Community</a>
+                    <div id="navStatusCommunity" class="navButtonStatus" ng-class="Buttons['community'].Status"></div>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="navButton" href="#!/community/users">
+                                <i class="fa fa-users faPadL" aria-hidden="true"></i>
+                                Users
+                            </a>
+                        </li>
+                        <li>
+                            <a class="navButton" href="#!/community/chat">
+                                <i class="fa fa-comments-o faPadL" aria-hidden="true"></i>
+                                Chat
+                            </a>
+                        </li>
+                        <li>
+                            <a class="navButton" href="#!/community/leaderboards">
+                                <i class="fa fa-bar-chart faPadL" aria-hidden="true"></i>
+                                Leaderboards
+                            </a>
+                        </li>
+                    </ul>
+                </li>
 
-            <!-- Admin Nav -->
-            <li class="dropdown" ng-show="Buttons['admin'].Enabled">
-                <a class="dropdown-toggle" href="#!/admin">Admin</a>
-                <div id="navStatusAdmin" class="navButtonStatus" ng-class="Buttons['admin'].Status"></div>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a href="#!/admin/news">
-                            <i class="fa fa-newspaper-o faPadL" aria-hidden="true"></i>
-                            News
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#!/admin/library">
-                            <i class="fa fa-book faPadL" aria-hidden="true"></i>
-                            Library
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#!/admin/community">
-                            <i class="fa fa-users faPadL" aria-hidden="true"></i>
-                            Community
-                        </a>
-                    </li>
-                </ul>
-            </li>
-        </ul>
+                <!-- Admin Nav -->
+                <li class="dropdown" ng-show="Buttons['admin'].Enabled">
+                    <a class="dropdown-toggle navButton" href="#!/admin">Admin</a>
+                    <div id="navStatusAdmin" class="navButtonStatus" ng-class="Buttons['admin'].Status"></div>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="navButton" href="#!/admin/news">
+                                <i class="fa fa-newspaper-o faPadL" aria-hidden="true"></i>
+                                News
+                            </a>
+                        </li>
+                        <li>
+                            <a class="navButton" href="#!/admin/library">
+                                <i class="fa fa-book faPadL" aria-hidden="true"></i>
+                                Library
+                            </a>
+                        </li>
+                        <li>
+                            <a class="navButton" href="#!/admin/community">
+                                <i class="fa fa-users faPadL" aria-hidden="true"></i>
+                                Community
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
         
-        <div class="navSpacer">
+            <div class="navSpacer">
             
-        </div>
+            </div>
         
-        <div class="navAccount">
-            {{DisplayName}}Minimum<br />
-            <a href="#!" ng-click="Logout()">Sign out</a>
-        </div>
+            <div ng-controller="NavProfileController" style="display:inline-flex">
+                <div class="navAccount">
+                    {{DisplayName}}<br />
+                    <a class="lanButton" href="#" ng-click="Logout()" ng-show="LoggedIn">Sign out</a>
+                    <a class="lanButton" href="#" ng-click="Login()" ng-hide="LoggedIn">Sign in</a>
+                </div>
         
-        <div class="navAccountButtons">
-            <div class="navAccountButton LeftSide">
-                <a href="">
-                    <img class="navAccountImage" ng-click="ViewAccount()" src="https://gslans.net/content_fixed/accounts/default_avatar.png" />
-                </a>
-            </div>
-            <div class="navAccountButton">
-                <a href="">
-                    <i class="fa fa-cogs" aria-hidden="true"></i>
-                </a>
-            </div>
-            <div class="navAccountButton RightSide">
-                <a href="">
-                    <i class="fa fa-envelope-o" aria-hidden="true"></i>
-                </a>
+                <div class="navAccountButtons">
+                    <div class="navAccountButton LeftSide">
+                        <a href="">
+                            <img class="navAccountImage" ng-click="ViewAccount()" src="https://gslans.net/content_fixed/accounts/default_avatar.png" />
+                        </a>
+                    </div>
+                    <div class="navAccountButton">
+                        <a href="">
+                            <i class="fa fa-cogs" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                    <div class="navAccountButton RightSide">
+                        <a href="">
+                            <i class="fa fa-envelope-o" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
     <div class="lanPage" ng-view></div>
     
