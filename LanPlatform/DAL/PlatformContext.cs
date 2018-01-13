@@ -8,7 +8,6 @@ using LanPlatform.Accounts;
 using LanPlatform.Apps;
 using LanPlatform.Auth;
 using LanPlatform.Events;
-using LanPlatform.Network;
 using LanPlatform.News;
 using LanPlatform.Settings;
 
@@ -58,10 +57,6 @@ namespace LanPlatform.DAL
         // Events
         public DbSet<LanEvent> LanEvent { get; set; }
         public DbSet<LanEventGuest> LanEventGuest { get; set; }
-
-        // Messages
-        public DbSet<NetMessageOutput> NetMessage { get; set; }
-        public DbSet<NetMessageTarget> NetMessageTarget { get; set; }
 
         // News
         public DbSet<NewsStatus> NewsStatus { get; set; }

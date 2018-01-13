@@ -13,7 +13,6 @@ F Interface.js
 F News.js
 F Angular.js
 R Views
-R Messages
 F Controllers.js
 F Pagination.js
 D Pagination

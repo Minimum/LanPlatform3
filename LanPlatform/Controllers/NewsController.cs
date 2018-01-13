@@ -11,8 +11,6 @@ using LanPlatform.DTO.News;
 using LanPlatform.Models;
 using LanPlatform.Models.Requests;
 using LanPlatform.Models.Responses;
-using LanPlatform.Network;
-using LanPlatform.Network.Messages;
 using LanPlatform.News;
 using LanPlatform.Settings;
 
@@ -100,12 +98,6 @@ namespace LanPlatform.Controllers
 
                         PlatformSetting statusSetting = instance.Settings.GetSettingByName("NewsStatus");
 
-                        // TODO: Make a proper message for this
-                        if (statusSetting != null && statusSetting.ToInt64() == id)
-                        {
-                            NetMessageManager.AddMessageBroadcastQuick(instance, new NewsStatusChangeMessage(id));
-                        }
-
                         instance.Data = new NewsStatusDto(status);
                     }
                     else
@@ -165,8 +157,6 @@ namespace LanPlatform.Controllers
                     if (newsManager.GetStatusById(request.Id) != null)
                     {
                         instance.Settings.ChangeSetting("NewsStatus", request.Id.ToString());
-
-                        NetMessageManager.AddMessageBroadcastQuick(instance, new NewsStatusChangeMessage(request.Id));
                     }
                     else
                     {

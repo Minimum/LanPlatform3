@@ -15,9 +15,9 @@ namespace LanPlatform.Auth
             ExpireDate = 0;
         }
 
-        public bool Authenticate(long id, String key)
+        public bool Authenticate(long id, String key, long time)
         {
-            return id == Id && (ExpireDate == 0 || Engine.EngineUtil.CurrentTime < ExpireDate) && Key.Equals(key, StringComparison.OrdinalIgnoreCase);
+            return id == Id && (ExpireDate == 0 || time < ExpireDate) && Key.Equals(key, StringComparison.OrdinalIgnoreCase);
         }
 
         public static long GetIdFromCookie(HttpCookie cookie)

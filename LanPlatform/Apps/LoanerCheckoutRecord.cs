@@ -4,7 +4,6 @@ using System.Linq;
 using System.Web;
 using LanPlatform.Accounts;
 using LanPlatform.Database;
-using LanPlatform.Engine;
 
 namespace LanPlatform.Apps
 {
@@ -23,12 +22,12 @@ namespace LanPlatform.Apps
             Time = 0;
         }
 
-        public LoanerCheckoutRecord(UserAccount user, LoanerAccount loaner, bool checkout)
+        public LoanerCheckoutRecord(UserAccount user, LoanerAccount loaner, bool checkout, long time)
         {
             User = user.Id;
             Loaner = loaner.Id;
             Checkout = checkout;
-            Time = EngineUtil.CurrentTime;
+            Time = time;
         }
     }
 }

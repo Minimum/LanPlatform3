@@ -316,7 +316,6 @@
     <Compile Include="Controllers\InstallController.cs" />
     <Compile Include="Controllers\LightingController.cs" />
     <Compile Include="Controllers\LoanerController.cs" />
-    <Compile Include="Controllers\MessageController.cs" />
     <Compile Include="Controllers\MusicController.cs" />
     <Compile Include="Controllers\NewsController.cs" />
     <Compile Include="Controllers\RoleController.cs" />

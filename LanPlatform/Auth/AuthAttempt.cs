@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Web;
 using LanPlatform.Database;
-using LanPlatform.Engine;
 using LanPlatform.Models;
 
 namespace LanPlatform.Auth
@@ -37,7 +36,7 @@ namespace LanPlatform.Auth
                 IPAddress = HttpContext.Current.Request.UserHostAddress;
             }
 
-            Time = EngineUtil.CurrentTime;
+            Time = instance.Time;
 
             Success = success;
         }

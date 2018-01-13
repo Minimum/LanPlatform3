@@ -6,7 +6,6 @@ using System.Web;
 using System.Web.Http;
 using LanPlatform.Content;
 using LanPlatform.DTO.Content;
-using LanPlatform.Engine;
 using LanPlatform.Models;
 using Newtonsoft.Json;
 
@@ -41,7 +40,7 @@ namespace LanPlatform.Controllers
                         item.Filename = file.Headers.ContentDisposition.FileName.Trim('\"');
                         item.Size = data.LongLength;
                         item.Type = ContentManager.GetContentType(MimeMapping.GetMimeMapping(item.Filename));
-                        item.TimeAdded = EngineUtil.CurrentTime;
+                        item.TimeAdded = instance.Time;
 
                         contentManager.AddItem(item);
                         contentManager.SaveData(item, data);

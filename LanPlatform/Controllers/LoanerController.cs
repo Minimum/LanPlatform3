@@ -10,8 +10,6 @@ using LanPlatform.Apps;
 using LanPlatform.DTO.Apps;
 using LanPlatform.Models;
 using LanPlatform.Models.Requests;
-using LanPlatform.Network;
-using LanPlatform.Network.Messages;
 
 namespace LanPlatform.Controllers
 {
@@ -294,9 +292,6 @@ namespace LanPlatform.Controllers
                     loaner.CheckoutUser = localAccount.Id;
                     loaner.CheckoutChallenge++;
 
-                    // Add message
-                    NetMessageManager.AddMessageQuick(instance, new LoanerCheckoutMessage(loaner));
-
                     instance.SetData(true, "bool");
                 }
             }
@@ -337,9 +332,6 @@ namespace LanPlatform.Controllers
                     // Change checkout value
                     loaner.CheckoutUser = 0;
 
-                    // Add message
-                    NetMessageManager.AddMessageQuick(instance, new LoanerCheckoutMessage(loaner));
-
                     instance.SetData(true, "bool");
                 }
             }
@@ -370,8 +362,6 @@ namespace LanPlatform.Controllers
                     if (account.CheckoutChallenge == request.Challenge && account.CheckoutUser != 0)
                     {
                         account.SteamCode = request.Code;
-
-                        NetMessageManager.AddMessageSingleQuick(instance, account.CheckoutUser, new NewSteamCodeMessage(request.Code));
                     }
                     else
                     {

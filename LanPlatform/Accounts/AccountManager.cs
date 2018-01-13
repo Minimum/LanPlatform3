@@ -115,7 +115,7 @@ namespace LanPlatform.Accounts
 
         public void PostAuthTasks(UserAccount account)
         {
-            LanEventManager.PostAuthTasks(account, Instance);
+            
 
             return;
         }
@@ -235,7 +235,7 @@ namespace LanPlatform.Accounts
             AuthSession auth = GetSession(sessionId);
 
             // Authenticate
-            if (auth != null && auth.Authenticate(sessionId, key))
+            if (auth != null && auth.Authenticate(sessionId, key, Instance.Time))
             {
                 // Load account
                 account = GetAccount(auth.Account);
