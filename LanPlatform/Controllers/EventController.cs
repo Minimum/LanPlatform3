@@ -9,6 +9,7 @@ using LanPlatform.Accounts;
 using LanPlatform.DTO.Events;
 using LanPlatform.Events;
 using LanPlatform.Models;
+using LanPlatform.Settings;
 using Newtonsoft.Json;
 
 namespace LanPlatform.Controllers
@@ -403,6 +404,128 @@ namespace LanPlatform.Controllers
                     else
                     {
                         instance.SetData(true, "bool");
+                    }
+                }
+                else
+                {
+                    instance.SetError("INVALID_EVENT");
+                }
+            }
+            else
+            {
+                instance.SetError("ACCESS_DENIED");
+            }
+
+            return instance.ToResponse();
+        }
+
+        [HttpGet]
+        [Route("current")]
+        public HttpResponseMessage GetCurrentEvent()
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            LanEventManager events = new LanEventManager(instance);
+
+            instance.Data = events.GetCurrentEvent();
+
+            if (instance.Data == null)
+            {
+                instance.SetError("INVALID_EVENT");
+            }
+
+            return instance.ToResponse();
+        }
+
+        [HttpPost]
+        [Route("current/checkin")]
+        public HttpResponseMessage CurrentEventCheckin()
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            LanEventManager events = new LanEventManager(instance);
+            UserAccount localAccount = instance.LocalAccount;
+
+            if (localAccount != null)
+            {
+                LanEvent lanEvent = events.GetCurrentEvent();
+
+                // Is there an active event?
+                if (lanEvent != null)
+                {
+                    LanEventGuest guestEntry = events.GetEventGuest(lanEvent.Id, localAccount.Id);
+
+                    // Does the entry exist?
+                    if (guestEntry == null)
+                    {
+                        // If entry does not exist, generate new entry
+                        guestEntry = new LanEventGuest();
+
+                        guestEntry.Account = localAccount.Id;
+                        guestEntry.Event = lanEvent.Id;
+                        guestEntry.Arrived = instance.Time;
+
+                        events.AddEventGuest(guestEntry);
+
+                        // Increment account's events
+                        localAccount.TotalEvents++;
+                        localAccount.LastEvent = lanEvent.Id;
+
+                        instance.SetData(true, "bool");
+                    }
+                    else if (guestEntry.Arrived == 0)
+                    {
+                        // If entry is marked as invited but not arrived, set to arrived
+                        guestEntry.Arrived = instance.Time;
+
+                        // Increment account's events
+                        localAccount.TotalEvents++;
+                        localAccount.LastEvent = lanEvent.Id;
+
+                        instance.SetData(true, "bool");
+                    }
+                    else
+                    {
+                        instance.SetData(false, "bool");
+                    }
+                }
+                else
+                {
+                    instance.SetError("NO_EVENT");
+                }
+            }
+            else
+            {
+                instance.SetError("ACCESS_DENIED");
+            }
+
+            return instance.ToResponse();
+        }
+
+        [HttpPost]
+        [Route("current/{id}")]
+        public HttpResponseMessage SetCurrentEvent(long id)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            LanEventManager events = new LanEventManager(instance);
+
+            if (instance.Accounts.CheckAccess(LanEventManager.FlagSetCurrentEvent))
+            {
+                LanEvent lanEvent = events.GetEventById(id);
+
+                if (lanEvent != null)
+                {
+                    PlatformSetting currentEvent = instance.Settings.GetSettingByName(LanEventManager.SettingCurrentEvent);
+
+                    currentEvent.Value = lanEvent.Id.ToString();
+
+                    try
+                    {
+                        instance.Context.SaveChanges();
+
+                        instance.SetData(true, "bool");
+                    }
+                    catch (Exception e)
+                    {
+                        instance.SetError("SAVE_ERROR");
                     }
                 }
                 else

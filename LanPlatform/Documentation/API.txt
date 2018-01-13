@@ -135,6 +135,13 @@ event
 	DELETE	/{id}/guest/{guestId}
 		Removes a guest from an event.
 
+	GET		/current
+		Gets the current LAN event.
+	POST	/current/checkin
+		Attempts to check into the current LAN event.
+	POST	/current/{id}
+		Sets the current LAN event.
+
 news
 	PUT		/
 		Creates a news status.

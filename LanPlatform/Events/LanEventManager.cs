@@ -5,7 +5,6 @@ using System.Runtime.Remoting.Contexts;
 using System.Runtime.Remoting.Messaging;
 using LanPlatform.Accounts;
 using LanPlatform.DAL;
-using LanPlatform.Engine;
 using LanPlatform.Models;
 using LanPlatform.Settings;
 
@@ -20,6 +19,8 @@ namespace LanPlatform.Events
         public const String FlagCreateGuest = "LanEventGuestCreate";
         public const String FlagEditGuest = "LanEventGuestEdit";
         public const String FlagDeleteGuest = "LanEventGuestDelete";
+
+        public const String FlagSetCurrentEvent = "LanEventSetCurrent";
 
         public const String SettingCurrentEvent = "CurrentEvent";
 
@@ -57,13 +58,6 @@ namespace LanPlatform.Events
             return;
         }
 
-        public static void PostAuthTasks(UserAccount account, AppInstance instance)
-        {
-            new LanEventManager(instance).PostAuth(account);
-
-            return;
-        }
-
         protected void PostAuth(UserAccount account)
         {
             // TODO: Remove this, create checkin API action
@@ -92,7 +86,7 @@ namespace LanPlatform.Events
 
                         guestEntry.Account = account.Id;
                         guestEntry.Event = party.Id;
-                        guestEntry.Arrived = EngineUtil.CurrentTime;
+                        guestEntry.Arrived = Instance.Time;
 
                         Context.LanEventGuest.Add(guestEntry);
 
@@ -103,7 +97,7 @@ namespace LanPlatform.Events
                     else if (guestEntry.Arrived == 0)
                     {
                         // If entry is marked as invited but not arrived, set to arrived
-                        guestEntry.Arrived = EngineUtil.CurrentTime;
+                        guestEntry.Arrived = Instance.Time;
 
                         // Increment account's events
                         account.TotalEvents++;
@@ -116,6 +110,13 @@ namespace LanPlatform.Events
         }
 
         // Events
+
+        public LanEvent GetCurrentEvent()
+        {
+            PlatformSetting currentEvent = Instance.Settings.GetSettingByName(SettingCurrentEvent);
+
+            return GetEventById(currentEvent.ToInt64());
+        }
 
         public LanEvent GetEventById(long id)
         {

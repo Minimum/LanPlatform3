@@ -6,12 +6,9 @@ using System.Linq;
 using System.Web;
 using LanPlatform.Auth;
 using LanPlatform.DAL;
-using LanPlatform.Engine;
 using LanPlatform.Events;
 using LanPlatform.Models;
 using LanPlatform.Models.Requests;
-using LanPlatform.Network;
-using LanPlatform.Network.Messages;
 using LanPlatform.Settings;
 
 namespace LanPlatform.Accounts
@@ -89,12 +86,6 @@ namespace LanPlatform.Accounts
 
                 if (localAccount != null)
                 {
-                    // Mark user as active if previously inactive
-                    if (EngineUtil.CurrentTime >= localAccount.LastActive + 1800)
-                    {
-                        NetMessageManager.AddMessageBroadcastQuick(Instance, new NewActiveUserMessage(localAccount.Id));
-                    }
-
                     // Update account's last active time
                     UpdateActivity(localAccount);
                 }
@@ -399,7 +390,7 @@ namespace LanPlatform.Accounts
 
         public void UpdateActivity(UserAccount account)
         {
-            account.LastActive = EngineUtil.CurrentTime;
+            account.LastActive = Instance.Time;
 
             // Attempt to save last active time, not important if fails to concurrency
             try
@@ -507,7 +498,7 @@ namespace LanPlatform.Accounts
             AccessRecord record = new AccessRecord();
 
             record.Account = account.Id;
-            record.Time = EngineUtil.CurrentTime;
+            record.Time = Instance.Time;
             record.Success = success;
             record.Flag = flag;
             record.Scope = scope;

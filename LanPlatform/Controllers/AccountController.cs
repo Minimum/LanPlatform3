@@ -12,8 +12,6 @@ using LanPlatform.DTO.Accounts;
 using LanPlatform.Models;
 using LanPlatform.Models.Requests;
 using LanPlatform.Models.Responses;
-using LanPlatform.Network;
-using LanPlatform.Network.Messages;
 
 namespace LanPlatform.Controllers
 {
@@ -295,8 +293,6 @@ namespace LanPlatform.Controllers
                     if (content.IsImage())
                     {
                         account.Avatar = id;
-
-                        NetMessageManager.AddMessageBroadcastQuick(instance, new ChangeAvatarMessage(account));
 
                         instance.SetData(true, "bool");
                     }
@@ -1023,7 +1019,6 @@ namespace LanPlatform.Controllers
                 instance.AddCookie("LPSessionId", session.Id.ToString(), expiration);
                 instance.AddCookie("LPSessionKey", session.Key, expiration);
 
-                NetMessageManager.AddMessageBroadcastQuick(instance, new NewActiveUserMessage(localAccount.Id));
                 instance.Accounts.UpdateActivity(localAccount);
 
                 // TODO: Log successful attempt
@@ -1033,7 +1028,7 @@ namespace LanPlatform.Controllers
             else
             {
                 // TODO: Log failed attempt
-
+                
                 instance.Status = AppResponseStatus.ResponseError;
 
                 instance.StatusCode = "INVALID_ACCOUNT";

@@ -29,7 +29,3 @@ LPInterface.SetSectionStatus = function (sectionName, status) {
 
     return;
 }
-
-LPInterface.ShowAdminControl = function (flag, scope) {
-    return (LPAccounts.LocalAccount != null && LPAccounts.CheckAdmin(LPAccounts.LocalAccount, flag, scope));
-}

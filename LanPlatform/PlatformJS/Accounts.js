@@ -1,4 +1,4 @@
-﻿/*
+/*
 *   Accounts
 */
 var LPAccounts = {};
@@ -181,16 +181,17 @@ LPAccounts.GetAvatarURL = function(account)
     return url;
 }
 
-LPAccounts.CheckAdmin = function (account, flag, scope, callback)
+LPAccounts.CheckAdmin = function (account, flag, scope, callback, error)
 {
-    // TODO: Add proper flag checking
-    var access = account.Root;
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "account/" + account.Id + "/access/" + scope + "/" + flag,
+        method: "GET",
+        success: callback,
+        error: error
+    });
 
-    if (!access) {
-        
-    }
-
-    return access;
+    return;
 }
 
 LPAccounts.CheckLocalPermission = function(flag) {

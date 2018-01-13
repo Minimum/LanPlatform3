@@ -16,72 +16,42 @@ namespace LanPlatform.Models
 {
     public class AppInstance
     {
-        public String AppName
-        {
-            get { return Properties.Resources.AppName; }
-        }
+        public static long CurrentTime => (long) DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
-        public String AppBuild
-        {
-            get { return Properties.Resources.AppBuild; }
-        }
+        public String AppName => Properties.Resources.AppName;
+        public String AppBuild => Properties.Resources.AppBuild;
 
         // Context Data
         [JsonIgnore]
-        public AccountManager Accounts
-        {
-            get { return AccountManager; }
-        }
-
+        public AccountManager Accounts => AccountManager;
         protected AccountManager AccountManager;
 
         [JsonIgnore]
-        public UserAccount LocalAccount
-        {
-            get { return LocalUserAccount; }
-        }
-
+        public UserAccount LocalAccount => LocalUserAccount;
         protected UserAccount LocalUserAccount;
 
         [JsonIgnore]
-        public SettingsManager Settings
-        {
-            get { return SettingsManager; }
-        }
-
+        public SettingsManager Settings => SettingsManager;
         protected SettingsManager SettingsManager;
 
         [JsonIgnore]
-        public HttpRequestMessage RequestMessage
-        {
-            get { return Request; }
-        }
-
+        public HttpRequestMessage RequestMessage => Request;
         protected HttpRequestMessage Request;
 
         [JsonIgnore]
-        public HttpContext RequestContext
-        {
-            get { return InternalRequestContext; }
-        }
-
+        public HttpContext RequestContext => InternalRequestContext;
         protected HttpContext InternalRequestContext;
 
         [JsonIgnore]
-        public PlatformContext Context
-        {
-            get { return DataContext; }
-        }
-
+        public PlatformContext Context => DataContext;
         protected PlatformContext DataContext;
 
         [JsonIgnore]
-        public List<CookieHeaderValue> Cookies
-        {
-            get { return CookieList; }
-        }
-
+        public List<CookieHeaderValue> Cookies => CookieList;
         protected List<CookieHeaderValue> CookieList;
+
+        [JsonIgnore]
+        public long Time { get; }
 
         // Response Data
         public AppResponseStatus Status { get; set; }
@@ -100,6 +70,8 @@ namespace LanPlatform.Models
 
             Status = AppResponseStatus.ResponseHandled;
             StatusCode = "";
+
+            Time = CurrentTime;
 
             DataType = "null";
             Data = null;

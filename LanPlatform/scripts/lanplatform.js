@@ -378,16 +378,17 @@ LPAccounts.GetAvatarURL = function(account)
     return url;
 }
 
-LPAccounts.CheckAdmin = function (account, flag, scope, callback)
+LPAccounts.CheckAdmin = function (account, flag, scope, callback, error)
 {
-    // TODO: Add proper flag checking
-    var access = account.Root;
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "account/" + account.Id + "/access/" + scope + "/" + flag,
+        method: "GET",
+        success: callback,
+        error: error
+    });
 
-    if (!access) {
-        
-    }
-
-    return access;
+    return;
 }
 
 LPAccounts.CheckLocalPermission = function(flag) {
@@ -1269,10 +1270,6 @@ LPInterface.SetSectionStatus = function (sectionName, status) {
     return;
 }
 
-LPInterface.ShowAdminControl = function (flag, scope) {
-    return (LPAccounts.LocalAccount != null && LPAccounts.CheckAdmin(LPAccounts.LocalAccount, flag, scope));
-}
-
 // JSCombiner: News.js
 /*
     News
@@ -1839,6 +1836,9 @@ LPAngular.controller("AdminCommunityNav", function ($scope) {
     }
 
 });
+
+// JSCombiner: AddUsername.js
+
 
 // JSCombiner: Browse.js
 LPAngular.controller("RouteAdminCommunityAccountsBrowse", function ($scope, $location, $routeParams, $uibModal) {
