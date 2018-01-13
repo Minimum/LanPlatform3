@@ -52,6 +52,8 @@ namespace LanPlatform.Models
 
         [JsonIgnore]
         public long Time { get; }
+        [JsonIgnore]
+        public bool LocalClient { get; }
 
         // Response Data
         public AppResponseStatus Status { get; set; }
@@ -72,6 +74,7 @@ namespace LanPlatform.Models
             StatusCode = "";
 
             Time = CurrentTime;
+            LocalClient = SettingsManager.LocalService && IsLocalAddress(requestContext.Request.UserHostAddress);
 
             DataType = "null";
             Data = null;
@@ -153,6 +156,28 @@ namespace LanPlatform.Models
             response.Content = new StringContent(JsonConvert.SerializeObject(this), Encoding.UTF8, "application/json");
 
             return response;
+        }
+
+        private static bool IsLocalAddress(String address)
+        {
+            bool local = false;
+
+            if (address != null)
+            {
+                // 192.168.0.0 - 192.168.255.255
+                // 10.0.0.0 - 10.255.255.255
+                local = address.StartsWith("10.") || address.StartsWith("192.168.");
+
+                // 172.16.0.0 - 172.31.255.255
+                if (!local && address.StartsWith("172."))
+                {
+                    local = address[4] == '1' && (address[5] == '6' || address[5] == '7' || address[5] == '8' || address[5] == '9') ||
+                            address[4] == '2' ||
+                            address[4] == '3' && (address[5] == '0' || address[5] == '1');
+                }
+            }
+
+            return local;
         }
     }
 

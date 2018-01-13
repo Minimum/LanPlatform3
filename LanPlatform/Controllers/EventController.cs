@@ -444,7 +444,7 @@ namespace LanPlatform.Controllers
             LanEventManager events = new LanEventManager(instance);
             UserAccount localAccount = instance.LocalAccount;
 
-            if (localAccount != null)
+            if (localAccount != null && instance.LocalClient)
             {
                 LanEvent lanEvent = events.GetCurrentEvent();
 

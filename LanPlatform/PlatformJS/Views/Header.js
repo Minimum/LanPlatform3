@@ -68,7 +68,7 @@ LPAngular.controller("NavButtonController", function ($scope) {
     $scope.Buttons["library"].Status = LPInterface.PAGE_INACTIVE;
 
     $scope.Buttons["ambience"] = {};
-    $scope.Buttons["ambience"].Enabled = true;
+    $scope.Buttons["ambience"].Enabled = false;
     $scope.Buttons["ambience"].Status = LPInterface.PAGE_INACTIVE;
 
     $scope.Buttons["community"] = {};

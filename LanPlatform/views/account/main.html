@@ -4,8 +4,8 @@
     <li class="active" ng-show="AccountLoaded == 1">#{{Account.Id}} - {{Account.DisplayName}}</li>
 </ul>
 
-<div style="margin-left: 10px; margin-right: 10px; text-align: center" ng-hide="AccountLoaded != null">
-    <div class="loader loader-lg"></div> <span style="font-size: 42px; vertical-align: middle; margin-left: 15px">Loading Account</span>
+<div style="text-align: center; padding-top:40px" ng-hide="AccountLoaded != null">
+    <div class="loader loader-xl"></div>
 </div>
 
 <div style="margin-left: 10px; margin-right: 10px; text-align: center" ng-show="AccountLoaded == 2">

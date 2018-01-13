@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Linq;
 using LanPlatform.DAL;
 using LanPlatform.Models;
@@ -7,6 +8,44 @@ namespace LanPlatform.Settings
 {
     public class SettingsManager
     {
+        public static int InstallStatus
+        {
+            get
+            {
+                int status = 0;
+
+                Int32.TryParse(ConfigurationManager.AppSettings["LPInstallStatus"], out status);
+
+                return status;
+            }
+
+            set => ConfigurationManager.AppSettings["LPInstallStatus"] = value.ToString(); 
+        }
+
+        public static bool LocalService
+        {
+            get
+            {
+                int status = 0;
+
+                Int32.TryParse(ConfigurationManager.AppSettings["LPLocalService"], out status);
+
+                return status > 0;
+            }
+
+            set
+            {
+                if (value)
+                {
+                    ConfigurationManager.AppSettings["LPLocalService"] = "1";
+                }
+                else
+                {
+                    ConfigurationManager.AppSettings["LPLocalService"] = "0";
+                }
+            }
+        }
+
         protected PlatformContext Context;
 
         protected AppInstance Instance;

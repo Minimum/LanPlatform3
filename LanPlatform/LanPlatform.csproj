@@ -93,6 +93,7 @@
     <Content Include="App_Data\DevData_log.ldf">
       <DependentUpon>DevData.mdf</DependentUpon>
     </Content>
+    <Content Include="config.js" />
     <Content Include="css\bootstrap-theme.css" />
     <Content Include="css\bootstrap-theme.min.css" />
     <Content Include="css\bootstrap.css" />
