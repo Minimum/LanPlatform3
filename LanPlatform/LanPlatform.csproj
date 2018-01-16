@@ -89,10 +89,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Data\DevData.mdf" />
-    <Content Include="App_Data\DevData_log.ldf">
-      <DependentUpon>DevData.mdf</DependentUpon>
-    </Content>
     <Content Include="config.js" />
     <Content Include="css\bootstrap-theme.css" />
     <Content Include="css\bootstrap-theme.min.css" />
@@ -332,6 +328,7 @@
     <Compile Include="DTO\GOnline\Skills\PlayerSkillDto.cs" />
     <Compile Include="DTO\GOnline\Skills\SkillDto.cs" />
     <Compile Include="DTO\News\NewsStatusDto.cs" />
+    <Compile Include="DTO\News\QuickLinkDto.cs" />
     <Compile Include="Events\LanEvent.cs" />
     <Compile Include="Events\LanEventGuest.cs" />
     <Compile Include="Events\LanEventManager.cs" />
@@ -389,7 +386,9 @@
     <Compile Include="Music\Station.cs" />
     <Compile Include="News\NewsManager.cs" />
     <Compile Include="News\NewsStatus.cs" />
+    <Compile Include="News\QuickLink.cs" />
     <Compile Include="News\WeatherStatus.cs" />
+    <Compile Include="Platform\IPlatformManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -414,6 +413,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="App_Data\" />
     <Folder Include="PlatformJS\Views\Admin\News\Links\" />
     <Folder Include="PlatformJS\Views\Admin\News\Weather\" />
     <Folder Include="views\admin\community\chat\" />

@@ -8,10 +8,11 @@ using System.Web;
 using LanPlatform.Accounts;
 using LanPlatform.DAL;
 using LanPlatform.Models;
+using LanPlatform.Platform;
 
 namespace LanPlatform.Content
 {
-    public class ContentManager
+    public class ContentManager : IPlatformManager
     {
         protected PlatformContext Context;
 
@@ -29,6 +30,11 @@ namespace LanPlatform.Content
             get { return ConfigurationManager.AppSettings["LPContentUrl"]; }
 
             set { ConfigurationManager.AppSettings["LPContentUrl"] = value; }
+        }
+
+        public bool Install()
+        {
+            return true;
         }
 
         public bool CheckUserUpload(UserAccount user, String filename)

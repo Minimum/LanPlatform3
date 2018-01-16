@@ -61,6 +61,7 @@ namespace LanPlatform.DAL
         // News
         public DbSet<NewsStatus> NewsStatus { get; set; }
         public DbSet<WeatherStatus> WeatherStatus { get; set; }
+        public DbSet<QuickLink> NewsLink { get; set; }
 
         // Settings
         public DbSet<PlatformSetting> Setting { get; set; }

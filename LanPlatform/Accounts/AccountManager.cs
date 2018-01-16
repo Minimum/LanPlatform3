@@ -9,11 +9,12 @@ using LanPlatform.DAL;
 using LanPlatform.Events;
 using LanPlatform.Models;
 using LanPlatform.Models.Requests;
+using LanPlatform.Platform;
 using LanPlatform.Settings;
 
 namespace LanPlatform.Accounts
 {
-    public class AccountManager
+    public class AccountManager : IPlatformManager
     {
         // Access flags
         public const String FlagViewHiddenAccount = "AccountViewHidden";
@@ -41,7 +42,7 @@ namespace LanPlatform.Accounts
             Instance = instance;
         }
 
-        public void Install()
+        public bool Install()
         {
             SettingsManager settings = Instance.Settings;
 
@@ -61,7 +62,7 @@ namespace LanPlatform.Accounts
             AuthUsernameAttempt usernameAttempt = Context.AuthUsernameAttempt.SingleOrDefault(s => s.Id == 0);
             UserRole role = Context.Role.SingleOrDefault(s => s.Id == 0);
 
-            return;
+            return true;
         }
 
         /*

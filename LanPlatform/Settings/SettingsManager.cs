@@ -3,10 +3,11 @@ using System.Configuration;
 using System.Linq;
 using LanPlatform.DAL;
 using LanPlatform.Models;
+using LanPlatform.Platform;
 
 namespace LanPlatform.Settings
 {
-    public class SettingsManager
+    public class SettingsManager : IPlatformManager
     {
         public static int InstallStatus
         {
@@ -55,6 +56,11 @@ namespace LanPlatform.Settings
             Context = instance.Context;
 
             Instance = instance;
+        }
+
+        public bool Install()
+        {
+            return true;
         }
 
         public bool SettingNameExists(String name)

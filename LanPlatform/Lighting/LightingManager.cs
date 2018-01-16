@@ -4,10 +4,11 @@ using System.Linq;
 using System.Web;
 using LanPlatform.DAL;
 using LanPlatform.Models;
+using LanPlatform.Platform;
 
 namespace LanPlatform.Lighting
 {
-    public class LightingManager
+    public class LightingManager : IPlatformManager
     {
         protected AppInstance Instance;
         protected PlatformContext Context;
@@ -18,6 +19,9 @@ namespace LanPlatform.Lighting
             Context = instance.Context;
         }
 
-
+        public bool Install()
+        {
+            return true;
+        }
     }
 }

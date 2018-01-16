@@ -6,11 +6,12 @@ using System.Runtime.Remoting.Messaging;
 using LanPlatform.Accounts;
 using LanPlatform.DAL;
 using LanPlatform.Models;
+using LanPlatform.Platform;
 using LanPlatform.Settings;
 
 namespace LanPlatform.Events
 {
-    public class LanEventManager
+    public class LanEventManager : IPlatformManager
     {
         public const String FlagCreateEvent = "LanEventCreate";
         public const String FlagEditEvent = "LanEventEdit";
@@ -35,7 +36,7 @@ namespace LanPlatform.Events
             Instance = instance;
         }
 
-        public void Install()
+        public bool Install()
         {
             SettingsManager settings = Instance.Settings;
 
@@ -55,7 +56,7 @@ namespace LanPlatform.Events
             LanEventGuest eventGuest = Context.LanEventGuest.SingleOrDefault(s => s.Id == 0);
             LanEvent lanEvent = Context.LanEvent.SingleOrDefault(s => s.Id == 0);
 
-            return;
+            return true;
         }
 
         protected void PostAuth(UserAccount account)

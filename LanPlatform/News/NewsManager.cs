@@ -2,16 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.UI;
 using LanPlatform.DAL;
 using LanPlatform.Models;
+using LanPlatform.Platform;
 using LanPlatform.Settings;
 
 namespace LanPlatform.News
 {
-    public class NewsManager
+    public class NewsManager : IPlatformManager
     {
         public const String FlagChangeStatus = "NewsChangeStatus";
         public const String FlagChangeWeather = "NewsChangeWeather";
+
+        public const String FlagEditLink = "NewsEditLink";
 
         public const String SettingCurrentStatus = "NewsCurrentStatus";
         public const String SettingWeatherLocation = "NewsWeatherLocation";
@@ -28,7 +32,7 @@ namespace LanPlatform.News
             Instance = instance;
         }
 
-        public void Install()
+        public bool Install()
         {
             SettingsManager settings = Instance.Settings;
 
@@ -41,7 +45,7 @@ namespace LanPlatform.News
             settings.AddSetting(new PlatformSetting(SettingWeatherUpdateInterval, "Weather Update Interval",
                 "The update interval for the weather system in minutes.", "30"));
 
-            return;
+            return true;
         }
 
         public NewsStatus GetStatusById(long id)
@@ -92,6 +96,52 @@ namespace LanPlatform.News
         public void AddWeatherStatus(WeatherStatus status)
         {
             Context.WeatherStatus.Add(status);
+
+            return;
+        }
+
+        public void AddLink(QuickLink link)
+        {
+            Context.NewsLink.Add(link);
+
+            return;
+        }
+
+        public QuickLink GetLink(long id)
+        {
+            QuickLink link;
+
+            if (Instance.LocalClient || Instance.CheckAccess(FlagEditLink))
+            {
+                link = Context.NewsLink.SingleOrDefault(s => s.Id == id);
+            }
+            else
+            {
+                link = Context.NewsLink.SingleOrDefault(s => s.Id == id && !s.Local);
+            }
+
+            return link;
+        }
+
+        public List<QuickLink> GetActiveLinks()
+        {
+            List<QuickLink> links;
+
+            if (Instance.LocalClient)
+            {
+                links = Context.NewsLink.Where(s => s.LinkType != QuickLinkType.None).ToList();
+            }
+            else
+            {
+                links = Context.NewsLink.Where(s => s.LinkType != QuickLinkType.None && !s.Local).ToList();
+            }
+
+            return links;
+        }
+
+        public void RemoveLink(QuickLink link)
+        {
+            Context.NewsLink.Remove(link);
 
             return;
         }

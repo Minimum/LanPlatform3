@@ -6,10 +6,11 @@ using LanPlatform.Accounts;
 using LanPlatform.DAL;
 using LanPlatform.Models;
 using LanPlatform.Models.Requests;
+using LanPlatform.Platform;
 
 namespace LanPlatform.Apps
 {
-    public class AppManager
+    public class AppManager : IPlatformManager
     {
         public const String FlagAppEdit = "AppEdit";
         public const String FlagLoanerCreate = "AppLoanerCreate";
@@ -29,9 +30,9 @@ namespace LanPlatform.Apps
             Instance = instance;
         }
 
-        public void Install()
+        public bool Install()
         {
-            
+            return true;
         }
 
         // Apps 

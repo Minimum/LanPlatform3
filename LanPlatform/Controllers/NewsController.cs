@@ -19,6 +19,8 @@ namespace LanPlatform.Controllers
     [RoutePrefix("api/news")]
     public class NewsController : ApiController
     {
+        // Statuses
+
         [HttpPut]
         [Route("")]
         public HttpResponseMessage CreateStatus([FromBody] EditNewsStatusRequest request)
@@ -194,6 +196,158 @@ namespace LanPlatform.Controllers
             List<NewsStatusDto> status = NewsStatusDto.ConvertList(newsManager.GetStatusList(page, 50));
 
             instance.Data = new BrowseResult<NewsStatusDto>(status, newsManager.GetStatusCount());
+
+            return instance.ToResponse();
+        }
+
+        [HttpGet]
+        [Route("link")]
+        public HttpResponseMessage GetActiveLinks()
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            NewsManager newsManager = new NewsManager(instance);
+
+            instance.SetData(newsManager.GetActiveLinks(), "QuickLinkList");
+
+            return instance.ToResponse();
+        }
+
+        [HttpPut]
+        [Route("link")]
+        public HttpResponseMessage AddLink([FromBody] QuickLinkDto link)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+
+            if (instance.CheckAccess(NewsManager.FlagEditLink))
+            {
+                NewsManager newsManager = new NewsManager(instance);
+                QuickLink newLink = new QuickLink();
+
+                newLink.Title = link.Title;
+                newLink.Link = link.Link;
+                newLink.LinkType = link.LinkType;
+
+                newsManager.AddLink(newLink);
+
+                try
+                {
+                    instance.Context.SaveChanges();
+
+                    instance.SetData(newLink, "QuickLink");
+                }
+                catch (Exception e)
+                {
+                    instance.SetError("SAVE_ERROR");
+                }
+            }
+            else
+            {
+                instance.SetError("ACCESS_DENIED");
+            }
+
+            return instance.ToResponse();
+        }
+
+        [HttpGet]
+        [Route("link/{id}")]
+        public HttpResponseMessage GetLink(long id)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            NewsManager newsManager = new NewsManager(instance);
+
+            instance.Data = newsManager.GetLink(id);
+
+            if (instance.Data != null)
+            {
+                instance.DataType = "QuickLink";
+            }
+            else
+            {
+                instance.SetError("INVALID_LINK");
+            }
+
+            return instance.ToResponse();
+        }
+
+        [HttpPost]
+        [Route("link/{id}")]
+        public HttpResponseMessage EditLink(long id, [FromBody] QuickLinkDto link)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+
+            if (instance.CheckAccess(NewsManager.FlagEditLink))
+            {
+                NewsManager newsManager = new NewsManager(instance);
+
+                QuickLink editLink = newsManager.GetLink(id);
+
+                if (editLink != null)
+                {
+                    editLink.Title = link.Title;
+                    editLink.Link = link.Link;
+                    editLink.LinkType = link.LinkType;
+                    editLink.Local = link.Local;
+
+                    try
+                    {
+                        instance.Context.SaveChanges();
+
+                        instance.SetData(editLink, "QuickLink");
+                    }
+                    catch (Exception e)
+                    {
+                        instance.SetError("CONCURRENCY_ERROR");
+                    }
+                }
+                else
+                {
+                    instance.SetError("INVALID_LINK");
+                }
+            }
+            else
+            {
+                instance.SetError("ACCESS_DENIED");
+            }
+
+            return instance.ToResponse();
+        }
+
+        [HttpDelete]
+        [Route("link/{id}")]
+        public HttpResponseMessage DeleteLink(long id)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+
+            if (instance.CheckAccess(NewsManager.FlagEditLink))
+            {
+                NewsManager newsManager = new NewsManager(instance);
+
+                QuickLink link = newsManager.GetLink(id);
+
+                if (link != null)
+                {
+                    newsManager.RemoveLink(link);
+
+                    try
+                    {
+                        instance.Context.SaveChanges();
+
+                        instance.SetData(true, "bool");
+                    }
+                    catch (Exception e)
+                    {
+                        instance.SetError("SAVE_ERROR");
+                    }
+                }
+                else
+                {
+                    instance.SetError("INVALID_LINK");
+                }
+            }
+            else
+            {
+                instance.SetError("ACCESS_DENIED");
+            }
 
             return instance.ToResponse();
         }
