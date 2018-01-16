@@ -1,4 +1,6 @@
-﻿<div style="margin: 0 10px; display: flex; flex-direction: column; height: 100%">
+﻿<div class="loader loader-route" ng-show="LoadStatus == 0"></div>
+
+<div style="margin: 0 10px; display: flex; flex-direction: column; height: 100%" ng-show="LoadStatus == 1">
     <!-- Page Header -->
     <ul class="breadcrumb">
         <li><a href="#!/community">Community</a></li>
@@ -13,17 +15,9 @@
             <div class="panel-heading">Channels</div>
 
             <ul class="list-group">
-                <li class="list-group-item">
-                    <span class="badge">14</span>
-                    General Chat
-                </li>
-                <li class="list-group-item">
-                    <span class="badge">2</span>
-                    The Specialists 2.1
-                </li>
-                <li class="list-group-item">
-                    <span class="badge">1</span>
-                    Gabion Online
+                <li class="list-group-item" ng-repeat="room in ChatRooms">
+                    <span class="badge">{{room.NewMessages}}</span>
+                    {{room.Name}}
                 </li>
             </ul>
         </div>
@@ -34,13 +28,9 @@
         <!-- Chat View/Input -->
         <div style="flex-grow: 1; height:100%">
             <div class="panel panel-default" style="height: calc(100% - 80px)">
-                <div class="panel-heading">General Chat</div>
+                <div class="panel-heading">{{ChatHeader}}</div>
                 <div class="panel-body" style="overflow-y: auto; height: calc(100% - 42px)">
-                    spicymemer: maymays<br />
-                    clayte: bs<br />
-                    nickums: wow<br />
-                    spange: sarcasm<br />
-                    minimum: thangs
+                    <div ng-repeat="message in ChatMessages">{{message.Name}}: {{message.Message}}</div>
                 </div>
             </div>
             

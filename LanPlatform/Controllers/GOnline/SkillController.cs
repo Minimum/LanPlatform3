@@ -47,6 +47,10 @@ namespace LanPlatform.Controllers.GOnline
                     instance.SetError("SAVE_ERROR");
                 }
             }
+            else
+            {
+                instance.SetError("ACCESS_DENIED");
+            }
 
             return instance.ToResponse();
         }
