@@ -2,9 +2,7 @@
     There has been an error loading this account.
 </div>
 
-<div style="text-align: center; padding-top:40px" ng-show="LoadStatus == 0">
-    <div class="loader loader-xl"></div>
-</div>
+<div class="loader loader-route" ng-show="LoadStatus == 0"></div>
 
 <div ng-show="LoadStatus == 1" style="margin-left: 10px; margin-right: 10px">
     <ul class="breadcrumb">
@@ -15,7 +13,7 @@
 
     <div>
         <div style="display: inline-block; margin-right: 8px">
-            <h2 style="margin-top: 0px; font-size: 40px">
+            <h2 style="margin-top: 0; font-size: 40px">
                 {{Account.Username}}
             </h2>
 

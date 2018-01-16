@@ -4,9 +4,7 @@
 </ul>
 
 <div class="lanPageArea">
-    <div style="text-align: center; padding-top:40px" ng-show="LoadStatus == 0">
-        <div class="loader loader-xl"></div>
-    </div>
+    <div class="loader loader-route" ng-show="LoadStatus == 0"></div>
 
     <div class="alert alert-danger" ng-show="LoadStatus == 2">
         <h4>Error!</h4>
@@ -19,26 +17,26 @@
         <div class="panel-body" style="padding: 0">
             <table class="table table-striped table-hover" style="margin-bottom: 0">
                 <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Guest Accounts</th>
-                        <th>Download</th>
-                    </tr>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Guest Accounts</th>
+                    <th>Download</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="app in Apps">
-                        <td><a class="lanTextLink" href="">{{app.Title}}</a></td>
-                        <td>{{app.GetTypeName()}}</td>
-                        <td><a class="lanTextLink" href="">{{app.LoanerCount}}</a></td>
-                        <td><a class="lanTextLink" href="steam://install/70">{{app.GetDownloadTitle()}}</a></td>
-                    </tr>
+                <tr ng-repeat="app in Apps">
+                    <td><a class="lanTextLink" href="">{{app.Title}}</a></td>
+                    <td>{{app.GetTypeName()}}</td>
+                    <td><a class="lanTextLink" href="">{{app.LoanerCount}}</a></td>
+                    <td><a class="lanTextLink" href="steam://install/70">{{app.GetDownloadTitle()}}</a></td>
+                </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div style="width: 100%;text-align:center" ng-show="LoadStatus == 1">
+    <div style="width: 100%; text-align: center" ng-show="LoadStatus == 1">
         <ul class="pagination">
             <li ng-class="{disabled: Paginator.PreviousPage.Active==false}">
                 <a ng-href="{{Paginator.PreviousPage.Link}}">&laquo;</a>

@@ -375,6 +375,19 @@
     border-left: 0.88em solid #9cdcfe;
 }
 
+.loader.loader-route {
+    width: 9em;
+    height: 9em;
+    border-top: 0.99em solid rgba(156,220,254, 0.2);
+    border-right: 0.99em solid rgba(156,220,254, 0.2);
+    border-bottom: 0.99em solid rgba(156,220,254, 0.2);
+    border-left: 0.99em solid #9cdcfe;
+
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+}
+
 @-webkit-keyframes load8 {
   0% {
     -webkit-transform: rotate(0deg);
