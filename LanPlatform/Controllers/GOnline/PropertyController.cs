@@ -7,7 +7,7 @@ using System.Web.Http;
 
 namespace LanPlatform.Controllers.GOnline
 {
-    [RoutePrefix("api/gso/property")]
+    [RoutePrefix("api/go/property")]
     public class PropertyController : ApiController
     {
     }

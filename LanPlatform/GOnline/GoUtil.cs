@@ -5,6 +5,11 @@ using System.Web;
 
 namespace LanPlatform.GOnline
 {
+    public static class GoManager
+    {
+        public const String FlagScope = "GabionOnline";
+    }
+
     public enum PlayerItemAccess
     {
         None = 0,           // Item is a WIP, not accessable by anyone

@@ -14,5 +14,15 @@ namespace LanPlatform.GOnline.Skills
 
         public long BaseExperience { get; set; }
         public float LevelModifier { get; set; }
+
+        public Skill()
+        {
+            DevName = "";
+            Name = "";
+            Description = "";
+
+            BaseExperience = 0;
+            LevelModifier = 0.0f;
+        }
     }
 }

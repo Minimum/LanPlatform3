@@ -134,6 +134,9 @@ namespace LanPlatform.Models
             return;
         }
 
+        public bool CheckAccess(String flag) => Accounts.CheckAccess(flag);
+        public bool CheckAccess(String flag, String scope) => Accounts.CheckAccess(flag, scope);
+
         public HttpResponseMessage ToResponse()
         {
             HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK);

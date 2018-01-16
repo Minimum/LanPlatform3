@@ -7,7 +7,7 @@ using System.Web.Http;
 
 namespace LanPlatform.Controllers.GOnline
 {
-    [RoutePrefix("api/gso/weapon")]
+    [RoutePrefix("api/go/weapon")]
     public class WeaponController : ApiController
     {
     }

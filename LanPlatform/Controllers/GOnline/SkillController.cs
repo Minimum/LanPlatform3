@@ -6,13 +6,51 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using LanPlatform.DAL;
+using LanPlatform.DTO.GOnline.Skills;
+using LanPlatform.GOnline;
+using LanPlatform.GOnline.Skills;
 using LanPlatform.Models;
 
 namespace LanPlatform.Controllers.GOnline
 {
-    [RoutePrefix("api/gso/skill")]
+    [RoutePrefix("api/go/skill")]
     public class SkillController : ApiController
     {
+        [Route("")]
+        [HttpPut]
+        public HttpResponseMessage AddSkill([FromBody] SkillDto skill)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+
+            if (instance.CheckAccess(SkillManager.FlagAddSkill, GoManager.FlagScope))
+            {
+                GoContext context = new GoContext();
+                Skill newSkill = new Skill();
+
+                newSkill.DevName = skill.DevName;
+                newSkill.Name = skill.Name;
+                newSkill.Description = skill.Description;
+
+                newSkill.BaseExperience = skill.BaseExperience;
+                newSkill.LevelModifier = skill.LevelModifier;
+
+                context.Skill.Add(newSkill);
+
+                try
+                {
+                    context.SaveChanges();
+
+                    instance.SetData(newSkill, "Skill");
+                }
+                catch (Exception e)
+                {
+                    instance.SetError("SAVE_ERROR");
+                }
+            }
+
+            return instance.ToResponse();
+        }
+
         [Route("account/{id}")]
         [HttpGet]
         public HttpResponseMessage GetPlayerSkills(long id)
@@ -27,5 +65,7 @@ namespace LanPlatform.Controllers.GOnline
 
             return instance.ToResponse();
         }
+
+
     }
 }

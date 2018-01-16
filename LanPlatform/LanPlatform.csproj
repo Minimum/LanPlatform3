@@ -347,6 +347,7 @@
     <Compile Include="DTO\Events\LanEventGuestDto.cs" />
     <Compile Include="DTO\GabionDto.cs" />
     <Compile Include="DTO\GOnline\Skills\PlayerSkillDto.cs" />
+    <Compile Include="DTO\GOnline\Skills\SkillDto.cs" />
     <Compile Include="DTO\News\NewsStatusDto.cs" />
     <Compile Include="Events\LanEvent.cs" />
     <Compile Include="Events\LanEventGuest.cs" />
@@ -373,6 +374,7 @@
     <Compile Include="GOnline\Skills\PlayerSkill.cs" />
     <Compile Include="GOnline\Skills\Skill.cs" />
     <Compile Include="GOnline\Skills\SkillGroup.cs" />
+    <Compile Include="GOnline\Skills\SkillManager.cs" />
     <Compile Include="GOnline\Weapons\Weapon.cs" />
     <Compile Include="GOnline\Weapons\WeaponAddon.cs" />
     <Compile Include="GOnline\Weapons\WeaponAddonGroup.cs" />
