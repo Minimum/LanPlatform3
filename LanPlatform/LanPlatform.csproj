@@ -104,6 +104,7 @@
     <Content Include="css\rzslider.min.css" />
     <Content Include="css\ui-bootstrap-csp.css" />
     <Content Include="Documentation\API.txt" />
+    <Content Include="Documentation\API_GSO.txt" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -314,6 +315,10 @@
     <Compile Include="Controllers\AppController.cs" />
     <Compile Include="Controllers\ContentController.cs" />
     <Compile Include="Controllers\EventController.cs" />
+    <Compile Include="Controllers\GOnline\CharacterController.cs" />
+    <Compile Include="Controllers\GOnline\PropertyController.cs" />
+    <Compile Include="Controllers\GOnline\SkillController.cs" />
+    <Compile Include="Controllers\GOnline\WeaponController.cs" />
     <Compile Include="Controllers\InstallController.cs" />
     <Compile Include="Controllers\LightingController.cs" />
     <Compile Include="Controllers\LoanerController.cs" />
@@ -324,6 +329,7 @@
     <Compile Include="Controllers\TelemetryController.cs" />
     <Compile Include="Controllers\WeatherController.cs" />
     <Compile Include="DAL\ContentDal.cs" />
+    <Compile Include="DAL\GoContext.cs" />
     <Compile Include="DAL\LogContext.cs" />
     <Compile Include="DAL\PlatformContext.cs" />
     <Compile Include="Database\DatabaseObject.cs" />
@@ -340,6 +346,7 @@
     <Compile Include="DTO\Events\LanEventDto.cs" />
     <Compile Include="DTO\Events\LanEventGuestDto.cs" />
     <Compile Include="DTO\GabionDto.cs" />
+    <Compile Include="DTO\GOnline\Skills\PlayerSkillDto.cs" />
     <Compile Include="DTO\News\NewsStatusDto.cs" />
     <Compile Include="Events\LanEvent.cs" />
     <Compile Include="Events\LanEventGuest.cs" />
@@ -352,13 +359,24 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="GOnline\Account\GoAccount.cs" />
     <Compile Include="GOnline\Characters\Character.cs" />
     <Compile Include="GOnline\Characters\CharacterPreset.cs" />
     <Compile Include="GOnline\Characters\CharacterSkin.cs" />
     <Compile Include="GOnline\Color.cs" />
+    <Compile Include="GOnline\GoUtil.cs" />
     <Compile Include="GOnline\Properties\Property.cs" />
     <Compile Include="GOnline\Properties\PropertyAccess.cs" />
     <Compile Include="GOnline\Properties\PropertyOwner.cs" />
+    <Compile Include="GOnline\Properties\Shop.cs" />
+    <Compile Include="GOnline\Properties\ShopItem.cs" />
+    <Compile Include="GOnline\Skills\PlayerSkill.cs" />
+    <Compile Include="GOnline\Skills\Skill.cs" />
+    <Compile Include="GOnline\Skills\SkillGroup.cs" />
+    <Compile Include="GOnline\Weapons\Weapon.cs" />
+    <Compile Include="GOnline\Weapons\WeaponAddon.cs" />
+    <Compile Include="GOnline\Weapons\WeaponAddonGroup.cs" />
+    <Compile Include="GOnline\Weapons\WeaponGroup.cs" />
     <Compile Include="Lighting\Light.cs" />
     <Compile Include="Lighting\LightGroup.cs" />
     <Compile Include="Lighting\LightingManager.cs" />

@@ -1,0 +1,27 @@
+﻿character
+	PUT		/
+		Creates a character.
+	GET		/{id}
+		Gets a character.
+	POST	/{id}
+		Edits a character.
+	DELETE	/{id}
+		Deletes a character.
+
+	PUT		/{id}/skin
+		Creates a skin for a character.
+	GET		/{id}/skin
+		Gets the skins available to a character.
+
+	GET		/{id}/skin/{skinId}
+		Gets a skin.
+	POST	/{id}/skin/{skinId}
+		Edits a skin.
+	DELETE	/{id}/skin/{skinId}
+		Deletes a skin.
+
+
+
+property
+
+weapon

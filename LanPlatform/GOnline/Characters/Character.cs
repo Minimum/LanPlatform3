@@ -9,7 +9,9 @@ namespace LanPlatform.GOnline.Characters
 {
     public class Character : EditableDatabaseObject
     {
-        [NotMapped]
-        public List<CharacterSkin> Skins { get; set; }
+        public String Name { get; set; }
+        public PlayerItemAccess Access { get; set; }
+
+
     }
 }

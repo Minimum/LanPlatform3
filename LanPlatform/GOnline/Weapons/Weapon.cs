@@ -4,11 +4,11 @@ using System.Linq;
 using System.Web;
 using LanPlatform.Database;
 
-namespace LanPlatform.GOnline.Characters
+namespace LanPlatform.GOnline.Weapons
 {
-    public class CharacterSkin : EditableDatabaseObject
+    public class Weapon : EditableDatabaseObject
     {
         public String Name { get; set; }
-        public PlayerItemAccess Access { get; set; }
+
     }
 }
