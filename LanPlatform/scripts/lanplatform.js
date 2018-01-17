@@ -231,11 +231,11 @@ LPAccounts.Initialize = function (data) {
     }
 
     // Get active users
-    var userCount = data.Data.ActiveUsers.length;
+    //var userCount = data.Data.ActiveUsers.length;
 
-    for (var x = 0; x < userCount; x++) {
+    //for (var x = 0; x < userCount; x++) {
         //LPAccounts.AddAccount(data.Data.ActiveUsers[x]);
-    }
+    //}
 
     LPAccounts.Initialized = true;
 
@@ -907,14 +907,30 @@ LPApps.Initialize = function (data) {
     return;
 }
 
-LPApps.GetApp = function (id, callback) {
-    var app = LPApps.Apps[id];
+LPApps.GetApp = function (id, callback, error) {
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "app/" + id,
+        method: "GET",
+        success: callback,
+        error: error,
+        timeout: 5000
+    });
 
-    if (app == null) {
-        $.getJSON(LanPlatform.ApiPath + "app/" + id, {}, callback);
-    }
+    return;
+}
 
-    return app;
+LPApps.GetAppLoaners = function(id, callback, error) {
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "app/" + id + "/loaner",
+        method: "GET",
+        success: callback,
+        error: error,
+        timeout: 5000
+    });
+
+    return;
 }
 
 LPApps.GetAppPage = function(page, pageSize, sortDescending, sortProperty, callback) {
@@ -1276,12 +1292,14 @@ LPInterface.SetSectionStatus = function (sectionName, status) {
 */
 var LPNews = {};
 
-// Events
-LPNews.OnStatusChange = new LPEvents.EventHandler();
-LPNews.OnWeatherChange = new LPEvents.EventHandler();
-
-LPNews.GetCurrentStatus = function (callback) {
-    $.getJSON(LanPlatform.ApiPath + "news/current", {}, callback);
+LPNews.GetCurrentStatus = function (callback, error) {
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "news/current",
+        method: "GET",
+        success: callback,
+        error: error
+    });
 
     return;
 }
@@ -1421,44 +1439,6 @@ LPAngular.controller("FooterController", function ($scope) {
     $scope.FooterMode = 0;
 
     $scope.Version = LanPlatform.VersionName;
-    $scope.Song = "Enter The Yakuza Club";
-    $scope.Artist = "Hollywood Burns";
-
-    $scope.Position = 0;
-
-    $scope.PositionText = "0:00";
-    $scope.LengthText = "5:17";
-
-    $scope.ShowPlay = true;
-
-    $scope.Volume = 80;
-
-    $scope.PositionSlider = {
-        floor: 0,
-        ceil: 317,
-        hidePointerLabels: true,
-        hideLimitLabels: true,
-        showSelectionBar: true,
-        translate: function (value, sliderId, label) {
-            var seconds = (value % 60);
-
-            if (seconds < 10) {
-                seconds = "0" + seconds;
-            }
-
-            $scope.PositionText = Math.floor(value / 60) + ":" + seconds;
-
-            return (value / 60) + ":" + (value % 60);
-        }
-    };
-
-    $scope.VolumeSlider = {
-        floor: 0,
-        ceil: 100,
-        hidePointerLabels: true,
-        hideLimitLabels: true,
-        showSelectionBar: true
-    };
 });
 
 // JSCombiner: Header.js
@@ -2438,21 +2418,18 @@ LPAngular.controller('ModalUploadFile', function ($uibModalInstance, $scope) {
 });
 
 // JSCombiner: Home.js
-LPAngular.controller("RouteHomeMain", function ($scope) {
+LPAngular.controller("RouteHomeMain", function ($scope, $interval) {
     LPInterface.NavSelect("home");
 
     $scope.AccountLoaded = false;
 
     $scope.WeatherStatus = null;
 
-    $scope.NewsStatus = {};
-    $scope.NewsStatus.Id = 0;
-    $scope.NewsStatus.Title = "No Title";
-    $scope.NewsStatus.Content = "No status loaded!";
+    $scope.NewsStatusBody = "No status loaded!";
     
     $scope.UpdateNewsStatus = function(data) {
         if (data.Status == LPNet.RESPONSE_HANDLED) {
-            $scope.NewsStatus = data.data;
+            $scope.NewsStatusBody = data.data.Content;
         }
     }
 
@@ -2467,6 +2444,11 @@ LPAngular.controller("RouteHomeMain", function ($scope) {
 
         $scope.AccountLoaded = true;
     }
+
+    // Check news status every 10s
+    $interval(function () {
+        LPNews.GetCurrentStatus($scope.UpdateNewsStatus);
+    }, 10000);
 
     LPNews.GetCurrentStatus($scope.UpdateNewsStatus);
     //LPNews.GetWeather($scope.UpdateWeather);
@@ -2648,7 +2630,91 @@ LPAngular.controller("RouteLibraryMain", function ($scope) {
 });
 
 // JSCombiner: AppView.js
+LPAngular.controller("RouteLibraryAppView", function($scope, $location, $routeParams, $uibModal) {
+    LPInterface.NavSelect("library");
 
+    $scope.LoadStatus = 0;
+    $scope.LoadLoaners = 0;
+    $scope.ErrorMessage = "";
+
+    $scope.LoadApp = function (data)
+    {
+        if (data != null)
+        {
+            if (data.Data != null)
+            {
+                $scope.App = new LPApps.App();
+                $scope.App.LoadModel(data.Data);
+
+                $scope.AppName = $scope.App.Title;
+                $scope.AppType = $scope.App.GetTypeName();
+
+                $scope.LoadStatus = 1;
+
+                LPApps.GetAppLoaners($routeParams.AppId, $scope.LoadLoaners, $scope.LoadLoadersFail);
+            }
+            else
+            {
+                if (data.StatusCode == "INVALID_APP") {
+                    $scope.LoadStatus = -1;
+                    $scope.ErrorMessage = "The app does not exist.";
+                }
+                else
+                {
+                    $scope.LoadStatus = -1;
+                    $scope.ErrorMessage = "Object returned was null.";
+                }
+            }
+        }
+        else
+        {
+            $scope.LoadStatus = -1;
+            $scope.ErrorMessage = "Invalid server response.";
+        }
+
+        $scope.$apply();
+    }
+
+    $scope.LoadAppFail = function ()
+    {
+        $scope.LoadStatus = -1;
+        $scope.ErrorMessage = "Communication to the server failed.";
+
+        $scope.$apply();
+    }
+
+    $scope.LoadLoaners = function (data)
+    {
+        if (data != null)
+        {
+            if (data.Data != null)
+            {
+                $scope.Loaners = data.Data;
+
+                $scope.LoadLoaners = 1;
+            }
+            else
+            {
+                $scope.LoadLoaners = -1;
+            }
+        }
+        else
+        {
+            $scope.LoadLoaners = -1;
+        }
+
+        $scope.$apply();
+    }
+
+    $scope.LoadLoanersFail = function ()
+    {
+        $scope.LoadLoaners = -1;
+
+        $scope.$apply();
+    }
+
+    LPApps.GetApp($routeParams.appId, $scope.LoadApp, $scope.LoadAppFail);
+});
 
 // JSCombiner: CreateAppModal.js
 
@@ -2999,7 +3065,7 @@ LPAngular.controller('ModalLoanerRemoveApp', function ($uibModalInstance, $scope
     };
 });
 
-// JSCombiner: Controllers.js
+// JSCombiner: Routes.js
 LPAngular.config(['$locationProvider', '$routeProvider',
     function config($locationProvider, $routeProvider) {
         $locationProvider.hashPrefix('!');
@@ -3026,6 +3092,10 @@ LPAngular.config(['$locationProvider', '$routeProvider',
                     templateUrl: 'views/library/apps.html',
                     controller: "RouteLibraryApps"
                 }).
+                    when('/library/app/:appId', {
+                        templateUrl: 'views/library/apps/view.html',
+                        controller: "RouteLibraryAppView"
+                    }).
                 when('/library/loaners', {
                     templateUrl: 'views/library/loaners.html',
                     controller: "RouteLibraryLoaners"

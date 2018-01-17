@@ -120,7 +120,7 @@
     <Content Include="PlatformJS\Content\ContentAccess.js" />
     <Content Include="PlatformJS\Content\ContentItem.js" />
     <Content Include="PlatformJS\Content\ContentUpload.js" />
-    <Content Include="PlatformJS\Controllers.js" />
+    <Content Include="PlatformJS\Routes.js" />
     <Content Include="PlatformJS\Events.js" />
     <Content Include="PlatformJS\Events\EventHandler.js" />
     <Content Include="PlatformJS\Events\EventHook.js" />
@@ -246,6 +246,7 @@
     <Content Include="views\global\accessdenied.html" />
     <Content Include="views\home\main.html" />
     <Content Include="views\library\apps.html" />
+    <Content Include="views\library\apps\view.html" />
     <Content Include="views\library\downloads.html" />
     <Content Include="views\library\loaners.html" />
     <Content Include="views\library\loaners\addapp.html" />

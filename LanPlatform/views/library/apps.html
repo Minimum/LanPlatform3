@@ -26,10 +26,10 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="app in Apps">
-                    <td><a class="lanTextLink" href="">{{app.Title}}</a></td>
+                    <td><a ng-href="#!/library/app/{{app.Id}}" style="text-decoration: none">{{app.Title}}</a></td>
                     <td>{{app.GetTypeName()}}</td>
-                    <td><a class="lanTextLink" href="">{{app.LoanerCount}}</a></td>
-                    <td><a class="lanTextLink" href="steam://install/70">{{app.GetDownloadTitle()}}</a></td>
+                    <td>{{app.LoanerCount}}</td>
+                    <td><a href="">{{app.GetDownloadTitle()}}</a></td>
                 </tr>
                 </tbody>
             </table>

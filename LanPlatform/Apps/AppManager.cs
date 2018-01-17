@@ -212,6 +212,14 @@ namespace LanPlatform.Apps
 
         // Loaner Apps
 
+        public List<LoanerAccount> GetAppLoaners(long appId)
+        {
+            return (from loaner in Context.LoanerAccount
+                join loanerApp in Context.LoanerApp on loaner.Id equals loanerApp.Account
+                where loanerApp.App == appId
+                select loaner).ToList();
+        }
+
         public List<LoanerApp> GetLoanerApps(LoanerAccount account)
         {
             return Context.LoanerApp.Where(s => s.Account == account.Id).ToList();

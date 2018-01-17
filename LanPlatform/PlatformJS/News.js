@@ -3,12 +3,14 @@
 */
 var LPNews = {};
 
-// Events
-LPNews.OnStatusChange = new LPEvents.EventHandler();
-LPNews.OnWeatherChange = new LPEvents.EventHandler();
-
-LPNews.GetCurrentStatus = function (callback) {
-    $.getJSON(LanPlatform.ApiPath + "news/current", {}, callback);
+LPNews.GetCurrentStatus = function (callback, error) {
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "news/current",
+        method: "GET",
+        success: callback,
+        error: error
+    });
 
     return;
 }

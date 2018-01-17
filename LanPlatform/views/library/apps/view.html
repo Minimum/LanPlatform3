@@ -1,0 +1,50 @@
+﻿<div ng-show="LoadStatus == -1">
+    <ul class="breadcrumb" style="margin-left: 10px; margin-right: 10px">
+        <li><a href="#!/library">Library</a></li>
+        <li><a href="#!/library/loaners">Apps</a></li>
+        <li class="active">View App</li>
+    </ul>
+
+    <div class="alert alert-danger lanPageError">
+        <h4>Error!</h4>
+        <p>There has been an error loading this app.</p>
+        <p>Error: {{ErrorMessage}}</p>
+    </div>
+</div>
+
+<div class="loader loader-route" ng-show="LoadStatus == 0"></div>
+
+<div ng-show="LoadStatus == 1" style="margin-left: 10px; margin-right: 10px">
+    <ul class="breadcrumb">
+        <li><a href="#!/library">Library</a></li>
+        <li><a href="#!/library/loaners">Apps</a></li>
+        <li class="active">{{AppName}}</li>
+    </ul>
+
+    <div>
+        <div style="display: inline-block; margin-right: 8px">
+            <h2 style="margin-top: 0; font-size: 40px">
+                {{AppName}}
+            </h2>
+            
+            <h4>{{AppType}}</h4>
+        </div>
+    </div>
+    
+    <div class="panel panel-default">
+        <div class="panel-heading">Loaners</div>
+        <div class="panel-body" style="padding: 0">
+            <span ng-show="LoadStatus == -1">Failed to load loaners!</span>
+
+            <div class="loader loader-md" ng-show="LoadStatus == 0"></div>
+
+            <table class="table table-striped table-hover" ng-show="LoadLoaners == 1">
+                <tbody>
+                <tr ng-repeat="loaner in Loaners">
+                    <td>{{loaner.Username}} <a ng-click="RemoveApp(app)" class="btn btn-danger btn-xs" style="margin-left: 8px" ng-show="AllowEditing == true">Remove</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

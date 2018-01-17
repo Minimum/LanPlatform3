@@ -1,18 +1,15 @@
-﻿LPAngular.controller("RouteHomeMain", function ($scope) {
+﻿LPAngular.controller("RouteHomeMain", function ($scope, $interval) {
     LPInterface.NavSelect("home");
 
     $scope.AccountLoaded = false;
 
     $scope.WeatherStatus = null;
 
-    $scope.NewsStatus = {};
-    $scope.NewsStatus.Id = 0;
-    $scope.NewsStatus.Title = "No Title";
-    $scope.NewsStatus.Content = "No status loaded!";
+    $scope.NewsStatusBody = "No status loaded!";
     
     $scope.UpdateNewsStatus = function(data) {
         if (data.Status == LPNet.RESPONSE_HANDLED) {
-            $scope.NewsStatus = data.data;
+            $scope.NewsStatusBody = data.data.Content;
         }
     }
 
@@ -27,6 +24,11 @@
 
         $scope.AccountLoaded = true;
     }
+
+    // Check news status every 10s
+    $interval(function () {
+        LPNews.GetCurrentStatus($scope.UpdateNewsStatus);
+    }, 10000);
 
     LPNews.GetCurrentStatus($scope.UpdateNewsStatus);
     //LPNews.GetWeather($scope.UpdateWeather);

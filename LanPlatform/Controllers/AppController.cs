@@ -134,6 +134,18 @@ namespace LanPlatform.Controllers
         }
 
         [HttpGet]
+        [Route("{id}/loaner")]
+        public HttpResponseMessage GetAppLoaners(long id)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            AppManager apps = new AppManager(instance);
+
+            instance.SetData(LoanerAccountDto.ConvertList(apps.GetAppLoaners(id)), "LoanerAccountList");
+
+            return instance.ToResponse();
+        }
+
+        [HttpGet]
         [Route("search")]
         public HttpResponseMessage SearchApps([FromUri] SearchAppRequest request)
         {

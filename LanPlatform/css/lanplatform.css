@@ -116,6 +116,12 @@
     overflow-y: auto;
 }
 
+.lanPageError {
+    width: 700px;
+    left: calc(50% - 350px);
+    position: absolute;
+}
+
 .dropdown:hover .dropdown-menu {
     display: block;
 }

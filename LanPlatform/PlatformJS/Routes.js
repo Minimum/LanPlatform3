@@ -24,6 +24,10 @@
                     templateUrl: 'views/library/apps.html',
                     controller: "RouteLibraryApps"
                 }).
+                    when('/library/app/:appId', {
+                        templateUrl: 'views/library/apps/view.html',
+                        controller: "RouteLibraryAppView"
+                    }).
                 when('/library/loaners', {
                     templateUrl: 'views/library/loaners.html',
                     controller: "RouteLibraryLoaners"

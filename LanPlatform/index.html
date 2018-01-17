@@ -170,28 +170,6 @@
         <footer class="lanFooter" ng-show="FooterMode == 0">
             {{Version}}
         </footer>
-
-        <footer class="lanFooter music" ng-show="FooterMode == 1">
-            <div class="musicInfo">
-                {{Song}}<br/>
-                <span style="font-size: 10px; vertical-align: bottom; color: #999999">{{Artist}}</span>
-            </div>
-            <div class="musicControlPlay"><i class="fa fa-step-backward musicControlButton" aria-hidden="true"></i><i class="fa fa-play musicControlButton" aria-hidden="true" ng-show="ShowPlay"></i><i class="fa fa-pause musicControlButton" aria-hidden="true" ng-hide="ShowPlay"></i><i class="fa fa-step-forward musicControlButton" aria-hidden="true"></i>
-            </div>
-            <div class="musicControlPosition">
-                <rzslider rz-slider-model="Position"
-                          rz-slider-options="PositionSlider"></rzslider>
-            </div>
-            <div style="flex-grow: 0; padding-left: 12px; line-height: 1.55; font-size: 16px">
-                <span style="vertical-align: middle">{{PositionText}} <span style="color: #999999">/ {{LengthText}}</span></span>
-            </div>
-            <div class="musicControlPlay"><i class="fa fa-volume-up musicControlButton" aria-hidden="true"></i>
-            </div>
-            <div class="musicControlVolume">
-                <rzslider rz-slider-model="Volume"
-                          rz-slider-options="VolumeSlider"></rzslider>
-            </div>
-        </footer>
     </div>
 </body>
 </html>

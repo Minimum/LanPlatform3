@@ -34,11 +34,11 @@ LPAccounts.Initialize = function (data) {
     }
 
     // Get active users
-    var userCount = data.Data.ActiveUsers.length;
+    //var userCount = data.Data.ActiveUsers.length;
 
-    for (var x = 0; x < userCount; x++) {
+    //for (var x = 0; x < userCount; x++) {
         //LPAccounts.AddAccount(data.Data.ActiveUsers[x]);
-    }
+    //}
 
     LPAccounts.Initialized = true;
 

@@ -46,14 +46,30 @@ LPApps.Initialize = function (data) {
     return;
 }
 
-LPApps.GetApp = function (id, callback) {
-    var app = LPApps.Apps[id];
+LPApps.GetApp = function (id, callback, error) {
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "app/" + id,
+        method: "GET",
+        success: callback,
+        error: error,
+        timeout: 5000
+    });
 
-    if (app == null) {
-        $.getJSON(LanPlatform.ApiPath + "app/" + id, {}, callback);
-    }
+    return;
+}
 
-    return app;
+LPApps.GetAppLoaners = function(id, callback, error) {
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "app/" + id + "/loaner",
+        method: "GET",
+        success: callback,
+        error: error,
+        timeout: 5000
+    });
+
+    return;
 }
 
 LPApps.GetAppPage = function(page, pageSize, sortDescending, sortProperty, callback) {
