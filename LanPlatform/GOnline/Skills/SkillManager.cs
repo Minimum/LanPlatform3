@@ -8,5 +8,6 @@ namespace LanPlatform.GOnline.Skills
     public static class SkillManager
     {
         public const String FlagAddSkill = "SkillAdd";
+        public const String FlagDeleteSkill = "SkillDelete";
     }
 }
