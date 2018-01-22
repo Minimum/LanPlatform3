@@ -112,7 +112,7 @@
 .lanPage {
     width: 100%;
     padding-top: 10px;
-    height: calc(100% - (64px + 32px));
+    height: calc(100% - (64px + 22px));
     overflow-y: auto;
 }
 

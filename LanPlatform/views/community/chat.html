@@ -8,14 +8,16 @@
     </ul>
     
     <!-- Page Content -->
-    <div style="display: flex; flex-grow: 1; height: calc(100% - 140px)">
+    <div style="display: flex; flex-grow: 1">
         
         <!-- Channels -->
         <div class="panel panel-default" style="width: 250px; max-height: calc(100% - 14px); align-self: start">
             <div class="panel-heading">Channels</div>
-
-            <ul class="list-group">
-                <li class="list-group-item" ng-repeat="room in ChatRooms">
+            <div class="text-center" style="padding: 8px" ng-show="ChannelLoad == 0">
+                <span class="loader loader-sm"></span>
+            </div>
+            <ul class="list-group" ng-show="ChannelLoad == 1">
+                <li class="list-group-item" ng-repeat="room in ChatChannels">
                     <span class="badge">{{room.NewMessages}}</span>
                     {{room.Name}}
                 </li>
@@ -27,7 +29,7 @@
 
         <!-- Chat View/Input -->
         <div style="flex-grow: 1; height:100%">
-            <div class="panel panel-default" style="height: calc(100% - 80px)">
+            <div class="panel panel-default" style="height: calc(100% - 76px)">
                 <div class="panel-heading">{{ChatHeader}}</div>
                 <div class="panel-body" style="overflow-y: auto; height: calc(100% - 42px)">
                     <div ng-repeat="message in ChatMessages">{{message.Name}}: {{message.Message}}</div>
@@ -35,9 +37,9 @@
             </div>
             
             <div class="input-group" style="border: 1px solid #464545; border-radius: 4px;background-color: #303030;">
-                <input class="form-control" style="background-color: #303030; color: #ffffff" type="text">
+                <input ng-keyup="$event.keyCode == 13 ? SendMessage() : null" class="form-control" style="background-color: #303030; color: #ffffff" type="text">
                 <span class="input-group-btn" style="background-color: #464545">
-                    <button class="btn btn-default" type="button">Send</button>
+                    <button ng-click="SendMessage()" class="btn btn-default" type="button">Send</button>
                 </span>
             </div>
         </div>

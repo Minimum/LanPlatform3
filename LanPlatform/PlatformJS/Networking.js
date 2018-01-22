@@ -47,7 +47,3 @@ LPNet.AppResponse = function (data) {
 
     return response;
 }
-
-LPNet.ReadMessages = function () {
-
-}

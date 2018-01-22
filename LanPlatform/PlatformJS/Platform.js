@@ -1,7 +1,8 @@
 ﻿var LanPlatform = {};
 
+LanPlatform.AppName = "LanPlatform";
 LanPlatform.AppBuild = 3000;
-LanPlatform.VersionName = "GabionPlatform v3." + LanPlatform.AppBuild;
+LanPlatform.VersionName = "LanPlatform v3." + LanPlatform.AppBuild;
 LanPlatform.AppPath = "http://localhost:45100/";
 LanPlatform.ApiPath = LanPlatform.AppPath + "api/";
 

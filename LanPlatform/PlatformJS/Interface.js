@@ -9,9 +9,6 @@ LPInterface.PAGE_ALERT = "alert";
 LPInterface.PAGE_URGENT = "urgent";
 LPInterface.PAGE_ACTIVE = "active";
 
-// LPInterface.NavButton = NavButtonController
-// LPInterface.NavProfile = NavProfileController
-
 LPInterface.StatusNames = ["", "update", "alert", "urgent", "active"];
 
 LPInterface.Initialize = function () {

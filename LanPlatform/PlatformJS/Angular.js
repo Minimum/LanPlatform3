@@ -25,11 +25,6 @@ LPAngular.controller("RouteCommunityMain", function ($scope) {
     LPInterface.SetupRoute($scope, "RouteCommunityMain");
 });
 
-LPAngular.controller("RouteCommunityChat", function ($scope) {
-    LPInterface.NavSelect("community");
-    LPInterface.SetupRoute($scope, "RouteCommunityChat");
-});
-
 LPAngular.controller("RouteCommunityLeaderboards", function ($scope) {
     LPInterface.NavSelect("community");
     LPInterface.SetupRoute($scope, "RouteCommunityLeaderboards");

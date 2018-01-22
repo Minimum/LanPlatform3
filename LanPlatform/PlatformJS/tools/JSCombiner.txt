@@ -1,5 +1,6 @@
 F Platform.js
 F Networking.js
+D Networking
 F Events.js
 D Events
 F LanEvents.js
@@ -12,6 +13,8 @@ D Apps
 F Interface.js
 F News.js
 D News
+F Chat.js
+D Chat
 F Angular.js
 R Views
 F Routes.js

@@ -1,8 +1,9 @@
 // JSCombiner: Platform.js
 var LanPlatform = {};
 
+LanPlatform.AppName = "LanPlatform";
 LanPlatform.AppBuild = 3000;
-LanPlatform.VersionName = "GabionPlatform v3." + LanPlatform.AppBuild;
+LanPlatform.VersionName = "LanPlatform v3." + LanPlatform.AppBuild;
 LanPlatform.AppPath = "http://localhost:45100/";
 LanPlatform.ApiPath = LanPlatform.AppPath + "api/";
 
@@ -83,8 +84,70 @@ LPNet.AppResponse = function (data) {
     return response;
 }
 
-LPNet.ReadMessages = function () {
+// JSCombiner: AjaxCall.js
+LPNet.AjaxCall = function() {
+    this.Status = LPNet.AppResponseType.ResponseHandled;
+    this.StatusCode = "";
 
+    this.DataType = "";
+    this.Data = null;
+}
+
+LPNet.AjaxCall.prototype.Initialize = function (success, error) {
+    this.OnSuccess = success;
+    this.OnError = error;
+
+    return;
+}
+
+LPNet.AjaxCall.prototype.Success = function(data) {
+    if (data != null) {
+        if (data.AppName != LanPlatform.AppName) {
+            this.Status = LPNet.AppResponseType.AppTypeMismatch;
+
+            if (this.OnError != null)
+                this.OnError(this);
+        }
+        else if (data.AppBuild != LanPlatform.AppBuild) {
+            this.Status = LPNet.AppResponseType.AppVersionMismatch;
+
+            if (this.OnError != null)
+                this.OnError(this);
+        }
+        else {
+            this.Status = data.Status;
+            this.StatusCode = data.StatusCode;
+
+            this.DataType = data.DataType;
+            this.Data = data.Data;
+
+            if (this.Status == LPNet.AppResponseType.ResponseHandled) {
+                if (this.OnSuccess != null)
+                    this.OnSuccess(this);
+            }
+            else {
+                if (this.OnError != null)
+                    this.OnError(this);
+            }
+        }
+    }
+    else {
+        this.Status = LPNet.AppResponseType.ResponseInvalid;
+
+        if (this.OnError != null)
+            this.OnError(this);
+    }
+
+    return;
+}
+
+LPNet.AjaxCall.prototype.Error = function () {
+    this.Status = LPNet.AppResponseType.ResponseInvalid;
+
+    if (this.OnError != null)
+        this.OnError(this);
+
+    return;
 }
 
 // JSCombiner: Events.js
@@ -1265,9 +1328,6 @@ LPInterface.PAGE_ALERT = "alert";
 LPInterface.PAGE_URGENT = "urgent";
 LPInterface.PAGE_ACTIVE = "active";
 
-// LPInterface.NavButton = NavButtonController
-// LPInterface.NavProfile = NavProfileController
-
 LPInterface.StatusNames = ["", "update", "alert", "urgent", "active"];
 
 LPInterface.Initialize = function () {
@@ -1477,6 +1537,63 @@ LPNews.WeatherStatus.prototype.GetFirstTime = function() {
     return time;
 }
 
+// JSCombiner: Chat.js
+LPChat = {};
+
+LPChat.GetMessages = function (channel, success, error) {
+    var call = new LPNet.AjaxCall();
+
+    call.Initialize(success, error);
+
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "chat/" + channel + "/recent",
+        method: "GET",
+        success: call.Success,
+        error: call.Error
+    });
+
+    return;
+}
+
+LPChat.GetChannel = function (channel, success, error) {
+    var call = new LPNet.AjaxCall();
+
+    call.Initialize(success, error);
+
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "chat/" + channel,
+        method: "GET",
+        success: call.Success,
+        error: call.Error
+    });
+
+    return;
+}
+
+LPChat.GetChannels = function (success, error) {
+    var call = new LPNet.AjaxCall();
+
+    call.Initialize(success, error);
+
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "chat",
+        method: "GET",
+        success: call.Success,
+        error: call.Error
+    });
+
+    return;
+}
+
+// JSCombiner: Channel.js
+
+
+// JSCombiner: Message.js
+
+
 // JSCombiner: Angular.js
 var LPAngular = angular.module("LanPlatform", [
     "ngRoute", "ngSanitize", "ui.bootstrap", "rzModule"
@@ -1503,11 +1620,6 @@ LPAngular.controller("RouteLibraryDownloads", function ($scope) {
 LPAngular.controller("RouteCommunityMain", function ($scope) {
     LPInterface.NavSelect("community");
     LPInterface.SetupRoute($scope, "RouteCommunityMain");
-});
-
-LPAngular.controller("RouteCommunityChat", function ($scope) {
-    LPInterface.NavSelect("community");
-    LPInterface.SetupRoute($scope, "RouteCommunityChat");
 });
 
 LPAngular.controller("RouteCommunityLeaderboards", function ($scope) {
@@ -2469,6 +2581,43 @@ LPAngular.controller("RouteAmbienceLighting", function ($scope) {
 LPAngular.controller("RouteAmbienceMusic", function ($scope) {
     LPInterface.NavSelect("ambience");
     LPInterface.SetupRoute($scope, "RouteAmbienceMusic");
+});
+
+// JSCombiner: Chat.js
+LPAngular.controller("RouteCommunityChat", function ($scope) {
+    LPInterface.NavSelect("community");
+
+    $scope.LoadStatus = 1;
+
+    // Channels view
+    $scope.ChannelLoad = 0;
+    $scope.ChatChannels = [];
+
+    // Chat view
+    $scope.ChatHeader = "Chat";
+    $scope.ChatMessages = [];
+
+    $scope.LoadMessages = function(data) {
+        
+    }
+
+    $scope.LoadNewMessages = function(data) {
+        
+    }
+
+    $scope.LoadChannels = function(data) {
+        
+    }
+
+    $scope.LoadChannelsFail = function(data) {
+        
+    }
+
+    $scope.SendMessage = function() {
+        
+    }
+
+    LPChat.GetChannels($scope.LoadChannels, $scope.LoadChannelsFail);
 });
 
 // JSCombiner: PlayerList.js
