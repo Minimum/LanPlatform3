@@ -48,6 +48,12 @@
         $scope.$apply();
     }
 
+    $scope.RetryLink = function() {
+        $scope.QuickLinkLoad = 0;
+
+        LPNews.GetActiveLinks($scope.LoadQuickLink, $scope.LoadQuickLinkFail);
+    }
+
     if (LPAccounts.LocalAccount != null) {
         $scope.AccountFirstName = LPAccounts.LocalAccount.FirstName;
 

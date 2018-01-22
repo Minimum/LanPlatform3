@@ -20,8 +20,9 @@
             <div class="text-center" style="padding: 8px" ng-show="QuickLinkLoad == 0">
                 <span class="loader loader-sm"></span>
             </div>
-            <div class="panel-body" ng-show="QuickLinkLoad == -1">
-                Failed to load quick links!
+            <div class="panel-body" style="text-align:center" ng-show="QuickLinkLoad == -1">
+                Failed to load quick links! <br /><br />
+                <button type="button" ng-click="RetryLink()" class="btn btn-primary btn-sm">Try again</button>
             </div>
             <div class="panel-body" ng-show="QuickLinkLoad == 1">
                 <span ng-repeat="link in QuickLinks"><a ng-attr-target="{{link.GetLinkTarget()}}" ng-href="{{link.Link}}">{{link.Title}}</a><br/></span>
