@@ -207,7 +207,7 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             NewsManager newsManager = new NewsManager(instance);
 
-            instance.SetData(newsManager.GetActiveLinks(), "QuickLinkList");
+            instance.SetData(QuickLinkDto.ConvertList(newsManager.GetActiveLinks()), "QuickLinkList");
 
             return instance.ToResponse();
         }
@@ -233,7 +233,7 @@ namespace LanPlatform.Controllers
                 {
                     instance.Context.SaveChanges();
 
-                    instance.SetData(newLink, "QuickLink");
+                    instance.SetData(new QuickLinkDto(newLink), "QuickLink");
                 }
                 catch (Exception e)
                 {
@@ -255,11 +255,11 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             NewsManager newsManager = new NewsManager(instance);
 
-            instance.Data = newsManager.GetLink(id);
+            QuickLink link = newsManager.GetLink(id);
 
-            if (instance.Data != null)
+            if (link != null)
             {
-                instance.DataType = "QuickLink";
+                instance.SetData(new QuickLinkDto(link), "QuickLink");
             }
             else
             {
@@ -292,7 +292,7 @@ namespace LanPlatform.Controllers
                     {
                         instance.Context.SaveChanges();
 
-                        instance.SetData(editLink, "QuickLink");
+                        instance.SetData(new QuickLinkDto(editLink), "QuickLink");
                     }
                     catch (Exception e)
                     {

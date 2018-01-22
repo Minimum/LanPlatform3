@@ -1292,12 +1292,12 @@ LPInterface.SetSectionStatus = function (sectionName, status) {
 */
 var LPNews = {};
 
-LPNews.GetCurrentStatus = function (callback, error) {
+LPNews.GetCurrentStatus = function (success, error) {
     $.ajax({
         dataType: "json",
         url: LanPlatform.ApiPath + "news/current",
         method: "GET",
-        success: callback,
+        success: success,
         error: error
     });
 
@@ -1308,29 +1308,173 @@ LPNews.GetStatus = function (id) {
 
 }
 
-LPNews.CreateStatus = function(status, callback, error) {
+LPNews.CreateStatus = function(status, success, error) {
     $.ajax({
         dataType: "json",
         url: LanPlatform.ApiPath + "news",
         method: "PUT",
         data: status,
-        success: callback,
+        success: success,
         error: error
     });
 
     return;
 }
 
-LPNews.GetStatusPage = function(page, callback) {
-    $.getJSON(LanPlatform.ApiPath + "news/browse/status/" + page, {}, callback);
+LPNews.GetStatusPage = function(page, success) {
+    $.getJSON(LanPlatform.ApiPath + "news/browse/status/" + page, {}, success);
 
     return;
 }
 
-LPNews.GetWeather = function(callback) {
-    $.getJSON(LanPlatform.ApiPath + "weather/current", {}, callback);
+LPNews.GetWeather = function (success) {
+    $.getJSON(LanPlatform.ApiPath + "weather/current", {}, success);
 
     return;
+}
+
+LPNews.GetActiveLinks = function (success, error) {
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "news/link",
+        method: "GET",
+        success: success,
+        error: error
+    });
+
+    return;
+}
+
+LPNews.CreateLink = function(link, success, error) {
+    $.ajax({
+        dataType: "json",
+        url: LanPlatform.ApiPath + "news/link",
+        method: "PUT",
+        data: link,
+        success: success,
+        error: error
+    });
+
+    return;
+}
+
+// JSCombiner: QuickLink.js
+LPNews.QuickLink = function () {
+    this.Id = 0;
+    this.Version = 0;
+
+    this.Title = "";
+    this.Link = "";
+    this.LinkType = 0;
+    this.Local = false;
+}
+
+LPNews.QuickLink.prototype.LoadModel = function(model) {
+    this.Id = model.Id;
+    this.Version = model.Version;
+
+    this.Title = model.Title;
+    this.Link = model.Link;
+    this.LinkType = model.LinkType;
+    this.Local = model.Local;
+
+    return;
+}
+
+LPNews.QuickLink.prototype.GetLinkTarget = function() {
+    var target = "_self";
+
+    // New Window
+    if (this.LinkType == 2) {
+        target = "_blank";
+    }
+    
+    return target;
+}
+
+// JSCombiner: WeatherStatus.js
+LPNews.WeatherStatus = function() {
+    // Current
+    this.CurrentTemperature = 0;
+    this.CurrentWeatherType = 0;
+    this.CurrentRainChance = 0;
+    this.CurrentTime = 0;
+
+    // Future
+    this.FirstTemperature = 0;
+    this.FirstWeatherType = 0;
+    this.FirstRainChance = 0;
+    this.FirstTime = 0;
+
+    this.SecondTemperature = 0;
+    this.SecondWeatherType = 0;
+    this.SecondRainChance = 0;
+    this.SecondTime = 0;
+
+    this.ThirdTemperature = 0;
+    this.ThirdWeatherType = 0;
+    this.ThirdRainChance = 0;
+    this.ThirdTime = 0;
+
+    // Daily
+    this.DailyRainChance = 0;
+    this.DailyHigh = 0;
+    this.DailyLow = 0;
+
+    this.Sunrise = 0;
+    this.Sunset = 0;
+}
+
+LPNews.WeatherStatus.prototype.LoadModel = function(model) {
+    // Current
+    this.CurrentTemperature = model.CurrentTemperature;
+    this.CurrentWeatherType = model.CurrentWeatherType;
+    this.CurrentRainChance = model.CurrentRainChance;
+    this.CurrentTime = model.CurrentTime;
+
+    // Future
+    this.FirstTemperature = model.FirstTemperature;
+    this.FirstWeatherType = model.FirstWeatherType;
+    this.FirstRainChance = model.FirstRainChance;
+    this.FirstTime = model.FirstTime;
+
+    this.SecondTemperature = model.SecondTemperature;
+    this.SecondWeatherType = model.SecondWeatherType;
+    this.SecondRainChance = model.SecondRainChance;
+    this.SecondTime = model.SecondTime;
+
+    this.ThirdTemperature = model.ThirdTemperature;
+    this.ThirdWeatherType = model.ThirdWeatherType;
+    this.ThirdRainChance = model.ThirdRainChance;
+    this.ThirdTime = model.ThirdTime;
+
+    // Daily
+    this.DailyRainChance = model.DailyRainChance;
+    this.DailyHigh = model.DailyHigh;
+    this.DailyLow = model.DailyLow;
+
+    this.Sunrise = model.Sunrise;
+    this.Sunset = model.Sunset;
+
+    return;
+}
+
+LPNews.WeatherStatus.prototype.GetFirstTime = function() {
+    var a = new Date(this.FirstTime * 1000);
+
+    var hour = a.getHours();
+    var min = a.getMinutes();
+    var suffix = (hour >= 12) ? " PM" : " AM";
+
+    hour = hour % 12;
+
+    if (hour == 0) {
+        hour = 12;
+    }
+
+    var time = hour + ((min < 10) ? ":0" : ":") + min + suffix;
+
+    return time;
 }
 
 // JSCombiner: Angular.js
@@ -2422,21 +2566,50 @@ LPAngular.controller("RouteHomeMain", function ($scope, $interval) {
     LPInterface.NavSelect("home");
 
     $scope.AccountLoaded = false;
-
     $scope.WeatherStatus = null;
-
     $scope.NewsStatusBody = "No status loaded!";
+    $scope.QuickLinkLoad = 0;
     
-    $scope.UpdateNewsStatus = function(data) {
-        if (data.Status == LPNet.RESPONSE_HANDLED) {
+    $scope.LoadNewsStatus = function(data) {
+        if (data.Status == LPNet.AppResponseType.ResponseHandled) {
             $scope.NewsStatusBody = data.data.Content;
         }
+
+        $scope.$apply();
     }
 
-    $scope.UpdateWeather = function(data) {
-        if (data.Status == LPNet.RESPONSE_HANDLED) {
+    $scope.LoadWeather = function(data) {
+        if (data.Status == LPNet.AppResponseType.ResponseHandled) {
             $scope.WeatherStatus = data.data;
         }
+
+        $scope.$apply();
+    }
+
+    $scope.LoadQuickLink = function(data) {
+        if (data.Status == LPNet.AppResponseType.ResponseHandled) {
+            var linkCount = data.Data.length;
+
+            $scope.QuickLinks = [];
+
+            for (var x = 0; x < linkCount; x++) {
+                $scope.QuickLinks[x] = new LPNews.QuickLink();
+
+                $scope.QuickLinks[x].LoadModel(data.Data[x]);
+            }
+
+            $scope.QuickLinkLoad = 1;
+        } else {
+            $scope.QuickLinkLoad = -1;
+        }
+
+        $scope.$apply();
+    }
+
+    $scope.LoadQuickLinkFail = function() {
+        $scope.QuickLinkLoad = -1;
+
+        $scope.$apply();
     }
 
     if (LPAccounts.LocalAccount != null) {
@@ -2447,11 +2620,12 @@ LPAngular.controller("RouteHomeMain", function ($scope, $interval) {
 
     // Check news status every 10s
     $interval(function () {
-        LPNews.GetCurrentStatus($scope.UpdateNewsStatus);
+        LPNews.GetCurrentStatus($scope.LoadNewsStatus);
     }, 10000);
 
-    LPNews.GetCurrentStatus($scope.UpdateNewsStatus);
-    //LPNews.GetWeather($scope.UpdateWeather);
+    LPNews.GetCurrentStatus($scope.LoadNewsStatus);
+    LPNews.GetActiveLinks($scope.LoadQuickLink, $scope.LoadQuickLinkFail);
+    //LPNews.GetWeather($scope.LoadWeather);
 });
 
 // JSCombiner: AppList.js

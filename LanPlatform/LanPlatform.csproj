@@ -120,6 +120,7 @@
     <Content Include="PlatformJS\Content\ContentAccess.js" />
     <Content Include="PlatformJS\Content\ContentItem.js" />
     <Content Include="PlatformJS\Content\ContentUpload.js" />
+    <Content Include="PlatformJS\News\QuickLink.js" />
     <Content Include="PlatformJS\Routes.js" />
     <Content Include="PlatformJS\Events.js" />
     <Content Include="PlatformJS\Events\EventHandler.js" />

@@ -11,6 +11,7 @@ F Apps.js
 D Apps
 F Interface.js
 F News.js
+D News
 F Angular.js
 R Views
 F Routes.js

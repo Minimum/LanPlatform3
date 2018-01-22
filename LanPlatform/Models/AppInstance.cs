@@ -167,9 +167,12 @@ namespace LanPlatform.Models
 
             if (address != null)
             {
+                // Localhost
                 // 192.168.0.0 - 192.168.255.255
                 // 10.0.0.0 - 10.255.255.255
-                local = address.StartsWith("10.") || address.StartsWith("192.168.");
+                local = address.Equals("localhost", StringComparison.OrdinalIgnoreCase) || address.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+                        address.Equals("::1", StringComparison.OrdinalIgnoreCase) || 
+                        address.StartsWith("10.") || address.StartsWith("192.168.");
 
                 // 172.16.0.0 - 172.31.255.255
                 if (!local && address.StartsWith("172."))

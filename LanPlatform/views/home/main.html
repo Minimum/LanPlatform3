@@ -17,11 +17,14 @@
     <div style="flex: 300px; flex-grow: 0">
         <div class="panel panel-default" style="width: 100%">
             <div class="panel-heading">Quick Links</div>
-            <div class="panel-body">
-                <a href="#!/library/loaners">Loaner Accounts</a><br/>
-                <a target="_blank" href="https://discord.gg/K7tKQf">Discord</a><br/>
-                <a href="#!/">Download GLauncher</a><br/>
-                <a href="https://unifi.gslans.net:8443">UniFi Controller</a>
+            <div class="text-center" style="padding: 8px" ng-show="QuickLinkLoad == 0">
+                <span class="loader loader-sm"></span>
+            </div>
+            <div class="panel-body" ng-show="QuickLinkLoad == -1">
+                Failed to load quick links!
+            </div>
+            <div class="panel-body" ng-show="QuickLinkLoad == 1">
+                <span ng-repeat="link in QuickLinks"><a ng-attr-target="{{link.GetLinkTarget()}}" ng-href="{{link.Link}}">{{link.Title}}</a><br/></span>
             </div>
         </div>
 
