@@ -448,8 +448,11 @@ namespace LanPlatform.Controllers
         public HttpResponseMessage GetChannelAccess(long id)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            PlatformContext context = instance.Context;
 
+            List<ChatAccess> access = (from a in context.ChatAccess where a.Channel == id select a).ToList();
 
+            instance.SetData(ChatAccessDto.ConvertList(access), "ChatAccessList");
 
             return instance.ToResponse();
         }
@@ -466,7 +469,60 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
+            if (instance.CheckAccess(ChatManager.FlagAddAccess))
+            {
+                PlatformContext context = instance.Context;
 
+                ChatAccess newAccess = new ChatAccess();
+
+                newAccess.Channel = access.Channel;
+                newAccess.Role = access.Role;
+
+                newAccess.CanWrite = access.CanWrite;
+                newAccess.CanTextToSpeech = access.CanTextToSpeech;
+                newAccess.CanUpload = access.CanUpload;
+
+                newAccess.CanMute = access.CanMute;
+                newAccess.CanSetGreeting = access.CanSetGreeting;
+
+                // Check for existing access
+                bool accessExists =
+                    (from a in context.ChatAccess where a.Channel == id && a.Role == access.Role select a)
+                    .SingleOrDefault() != null;
+
+                if (!accessExists)
+                {
+                    // Add new access
+                    instance.Context.ChatAccess.Add(newAccess);
+
+                    // Save changes
+                    try
+                    {
+                        context.SaveChanges();
+
+                        instance.SetData(new ChatAccessDto(newAccess), "ChatAccess");
+                    }
+                    catch (Exception e)
+                    {
+                        if (e is OptimisticConcurrencyException)
+                        {
+                            instance.SetError("SaveConcurrency");
+                        }
+                        else
+                        {
+                            instance.SetError("SaveError");
+                        }
+                    }
+                }
+                else
+                {
+                    instance.SetError("AccessExists");
+                }
+            }
+            else
+            {
+                instance.SetAccessDenied("AddAccess");
+            }
 
             return instance.ToResponse();
         }
@@ -483,7 +539,53 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
+            // Check for admin permissions
+            if (instance.CheckAccess(ChatManager.FlagEditAccess))
+            {
+                PlatformContext context = instance.Context;
 
+                ChatAccess access = (from a in context.ChatAccess where a.Id == accessId && a.Channel == id select a)
+                    .SingleOrDefault();
+
+                // Check if access exists
+                if (access != null)
+                {
+                    // Apply changes
+                    access.CanWrite = accessEdit.CanWrite;
+                    access.CanTextToSpeech = accessEdit.CanTextToSpeech;
+                    access.CanUpload = accessEdit.CanUpload;
+
+                    access.CanMute = accessEdit.CanMute;
+                    access.CanSetGreeting = accessEdit.CanSetGreeting;
+
+                    // Save changes
+                    try
+                    {
+                        context.SaveChanges();
+
+                        instance.SetData(new ChatAccessDto(access), "ChatAccess");
+                    }
+                    catch (Exception e)
+                    {
+                        if (e is OptimisticConcurrencyException)
+                        {
+                            instance.SetError("SaveConcurrency");
+                        }
+                        else
+                        {
+                            instance.SetError("SaveError");
+                        }
+                    }
+                }
+                else
+                {
+                    instance.SetError("InvalidAccess");
+                }
+            }
+            else
+            {
+                instance.SetAccessDenied("EditAccess");
+            }
 
             return instance.ToResponse();
         }
@@ -500,11 +602,51 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
+            // Check for admin permissions
+            if (instance.CheckAccess(ChatManager.FlagDeleteAccess))
+            {
+                PlatformContext context = instance.Context;
 
+                ChatAccess access = (from a in context.ChatAccess where a.Id == accessId && a.Channel == id select a)
+                    .SingleOrDefault();
+
+                // Check if access exists
+                if (access != null)
+                {
+                    // Remove access
+                    context.ChatAccess.Remove(access);
+
+                    // Save changes
+                    try
+                    {
+                        context.SaveChanges();
+
+                        instance.SetData(true, "bool");
+                    }
+                    catch (Exception e)
+                    {
+                        if (e is OptimisticConcurrencyException)
+                        {
+                            instance.SetError("SaveConcurrency");
+                        }
+                        else
+                        {
+                            instance.SetError("SaveError");
+                        }
+                    }
+                }
+                else
+                {
+                    instance.SetData(true, "bool");
+                }
+            }
+            else
+            {
+                instance.SetAccessDenied("DeleteAccess");
+            }
 
             return instance.ToResponse();
         }
-
 
         /*
          *  POST api/chat/{channelId}/mute/{userId}
@@ -513,11 +655,83 @@ namespace LanPlatform.Controllers
          */
         [HttpPost]
         [Route("{id}/mute/{userId}")]
-        public HttpResponseMessage MuteUser(long id, long userId)
+        public HttpResponseMessage MuteUser(long id, long userId, [FromBody] ChatMuteDto mute)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            UserAccount localAccount = instance.LocalAccount;
 
+            // Check if user is logged in
+            if (localAccount != null)
+            {
+                PlatformContext context = instance.Context;
 
+                // Check for chat mute access
+                bool access = (from a in context.ChatAccess
+                    join
+                        r in context.Role on a.Role equals r.Id
+                    join
+                        ar in context.AccountRole on r.Id equals ar.Role
+                    where ar.User == instance.LocalAccount.Id && a.Channel == id && a.CanMute
+                    select a).SingleOrDefault() != null;
+
+                if (access)
+                {
+                    UserAccount target = instance.Accounts.GetAccount(userId);
+
+                    // Check if target exists
+                    if (target != null)
+                    {
+                        // Check if target has immunity
+                        if (!instance.Accounts.CheckAccess(target, ChatManager.FlagMuteImmunity, false))
+                        {
+                            // Create new mute
+                            ChatMute newMute = new ChatMute();
+
+                            newMute.User = userId;
+                            newMute.Admin = localAccount.Id;
+                            newMute.Channel = id;
+                            newMute.Expire = mute.Expire;
+
+                            context.ChatMute.Add(newMute);
+
+                            // Save changes
+                            try
+                            {
+                                context.SaveChanges();
+
+                                instance.SetData(new ChatMuteDto(newMute), "ChatMute");
+                            }
+                            catch (Exception e)
+                            {
+                                if (e is OptimisticConcurrencyException)
+                                {
+                                    instance.SetError("SaveConcurrency");
+                                }
+                                else
+                                {
+                                    instance.SetError("SaveError");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            instance.SetError("TargetImmunity");
+                        }
+                    }
+                    else
+                    {
+                        instance.SetError("InvalidTarget");
+                    }
+                }
+                else
+                {
+                    instance.SetAccessDenied("MuteAccess");
+                }
+            }
+            else
+            {
+                instance.SetAccessDenied("InvalidAccount");
+            }
 
             return instance.ToResponse();
         }

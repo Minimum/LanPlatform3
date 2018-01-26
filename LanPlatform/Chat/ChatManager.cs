@@ -18,5 +18,7 @@ namespace LanPlatform.Chat
         public const String FlagAddAccess = "ChatAddAccess";
         public const String FlagEditAccess = "ChatEditAccess";
         public const String FlagDeleteAccess = "ChatDeleteAccess";
+
+        public const String FlagMuteImmunity = "ChatMuteImmunity";
     }
 }
