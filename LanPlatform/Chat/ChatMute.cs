@@ -6,7 +6,7 @@ using LanPlatform.Database;
 
 namespace LanPlatform.Chat
 {
-    public class ChatChannelMute : EditableDatabaseObject
+    public class ChatMute : EditableDatabaseObject
     {
         public long Channel { get; set; }
         public long User { get; set; }
@@ -14,7 +14,7 @@ namespace LanPlatform.Chat
 
         public long Admin { get; set; }
 
-        public ChatChannelMute()
+        public ChatMute()
         {
             Channel = 0;
             User = 0;

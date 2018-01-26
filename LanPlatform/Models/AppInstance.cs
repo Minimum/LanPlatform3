@@ -134,6 +134,12 @@ namespace LanPlatform.Models
             return;
         }
 
+        public void SetAccessDenied(String flag)
+        {
+            Status = AppResponseStatus.AccessDenied;
+            StatusCode = flag;
+        }
+
         public bool CheckAccess(String flag) => Accounts.CheckAccess(flag);
         public bool CheckAccess(String flag, String scope) => Accounts.CheckAccess(flag, scope);
 

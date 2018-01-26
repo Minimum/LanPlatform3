@@ -10,11 +10,13 @@ namespace LanPlatform.Chat
     {
         public String Title { get; set; }
         public String Greeting { get; set; }
+        public bool Active { get; set; }
 
         public ChatChannel()
         {
             Title = "";
             Greeting = "";
+            Active = true;
         }
     }
 }

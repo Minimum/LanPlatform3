@@ -7,6 +7,7 @@ using LanPlatform.Content;
 using LanPlatform.Accounts;
 using LanPlatform.Apps;
 using LanPlatform.Auth;
+using LanPlatform.Chat;
 using LanPlatform.Events;
 using LanPlatform.News;
 using LanPlatform.Settings;
@@ -62,6 +63,12 @@ namespace LanPlatform.DAL
         public DbSet<NewsStatus> NewsStatus { get; set; }
         public DbSet<WeatherStatus> WeatherStatus { get; set; }
         public DbSet<QuickLink> NewsLink { get; set; }
+
+        // Chat
+        public DbSet<ChatChannel> ChatChannel { get; set; }
+        public DbSet<ChatAccess> ChatAccess { get; set; }
+        public DbSet<ChatMute> ChatMute { get; set; }
+        public DbSet<ChatMessage> ChatMessage { get; set; }
 
         // Settings
         public DbSet<PlatformSetting> Setting { get; set; }

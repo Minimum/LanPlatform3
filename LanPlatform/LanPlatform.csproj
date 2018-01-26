@@ -295,8 +295,9 @@
     <Compile Include="Awards\ExperienceEntry.cs" />
     <Compile Include="Awards\PlayerAward.cs" />
     <Compile Include="Chat\ChatChannel.cs" />
-    <Compile Include="Chat\ChatChannelAccess.cs" />
-    <Compile Include="Chat\ChatChannelMute.cs" />
+    <Compile Include="Chat\ChatAccess.cs" />
+    <Compile Include="Chat\ChatManager.cs" />
+    <Compile Include="Chat\ChatMute.cs" />
     <Compile Include="Chat\ChatMessage.cs" />
     <Compile Include="Content\ContentAccess.cs" />
     <Compile Include="Content\ContentItem.cs" />
@@ -332,6 +333,10 @@
     <Compile Include="DTO\Accounts\UserRoleDto.cs" />
     <Compile Include="DTO\Apps\AppDto.cs" />
     <Compile Include="DTO\Apps\LoanerAccountDto.cs" />
+    <Compile Include="DTO\Chat\ChatAccessDto.cs" />
+    <Compile Include="DTO\Chat\ChatChannelDto.cs" />
+    <Compile Include="DTO\Chat\ChatMuteDto.cs" />
+    <Compile Include="DTO\Chat\ChatMessageDto.cs" />
     <Compile Include="DTO\Content\ContentItemDto.cs" />
     <Compile Include="DTO\EditableGabionDto.cs" />
     <Compile Include="DTO\Events\LanEventDto.cs" />
@@ -380,6 +385,7 @@
     <Compile Include="Models\AppInstance.cs" />
     <Compile Include="Models\Requests\AddUsernameRequest.cs" />
     <Compile Include="Models\Requests\ChangeNewsStatusRequest.cs" />
+    <Compile Include="Models\Requests\ChatMessageBrowseRequest.cs" />
     <Compile Include="Models\Requests\EditAccountRequest.cs" />
     <Compile Include="Models\Requests\EditNewsStatusRequest.cs" />
     <Compile Include="Models\Requests\InstallAccountRequest.cs" />
