@@ -649,11 +649,11 @@ namespace LanPlatform.Controllers
         }
 
         /*
-         *  POST api/chat/{channelId}/mute/{userId}
+         *  PUT api/chat/{channelId}/mute/{userId}
          *  ---
          *  Info: Mutes a user in a channel.
          */
-        [HttpPost]
+        [HttpPut]
         [Route("{id}/mute/{userId}")]
         public HttpResponseMessage MuteUser(long id, long userId, [FromBody] ChatMuteDto mute)
         {
@@ -721,6 +721,77 @@ namespace LanPlatform.Controllers
                     else
                     {
                         instance.SetError("InvalidTarget");
+                    }
+                }
+                else
+                {
+                    instance.SetAccessDenied("MuteAccess");
+                }
+            }
+            else
+            {
+                instance.SetAccessDenied("InvalidAccount");
+            }
+
+            return instance.ToResponse();
+        }
+
+        /*
+         *  DELETE api/chat/{channelId}/mute/{userId}
+         *  ---
+         *  Info: Unmutes a user in a channel.
+         */
+        [HttpDelete]
+        [Route("{id}/mute/{userId}")]
+        public HttpResponseMessage UnmuteUser(long id, long userId)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            UserAccount localAccount = instance.LocalAccount;
+
+            // Check if user is logged in
+            if (localAccount != null)
+            {
+                PlatformContext context = instance.Context;
+
+                // Check for chat mute access
+                bool access = (from a in context.ChatAccess
+                    join
+                        r in context.Role on a.Role equals r.Id
+                    join
+                        ar in context.AccountRole on r.Id equals ar.Role
+                    where ar.User == instance.LocalAccount.Id && a.Channel == id && a.CanMute
+                    select a).SingleOrDefault() != null;
+
+                if (access)
+                {
+                    // Get all active mutes
+                    List<ChatMute> mutes = (from m in context.ChatMute
+                        where m.Channel == id && m.User == userId && m.Expire > instance.Time
+                        select m).ToList();
+
+                    // Set all active mutes to expire now
+                    foreach (ChatMute mute in mutes)
+                    {
+                        mute.Expire = instance.Time;
+                    }
+
+                    // Save changes
+                    try
+                    {
+                        context.SaveChanges();
+
+                        instance.SetData(true, "bool");
+                    }
+                    catch (Exception e)
+                    {
+                        if (e is OptimisticConcurrencyException)
+                        {
+                            instance.SetError("SaveConcurrency");
+                        }
+                        else
+                        {
+                            instance.SetError("SaveError");
+                        }
                     }
                 }
                 else
