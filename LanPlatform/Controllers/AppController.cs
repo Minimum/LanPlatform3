@@ -5,6 +5,7 @@ using System.Web.Http;
 using LanPlatform.Accounts;
 using LanPlatform.DTO.Accounts;
 using LanPlatform.Apps;
+using LanPlatform.DTO;
 using LanPlatform.DTO.Apps;
 using LanPlatform.Models;
 using LanPlatform.Models.Requests;
@@ -40,7 +41,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(AppManager.FlagAppEdit);
             }
 
             return instance.ToResponse();
@@ -61,7 +62,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("INVALID_APP");
+                instance.SetError("InvalidApp");
             }
 
             return instance.ToResponse();
@@ -92,12 +93,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.SetError("INVALID_APP");
+                    instance.SetError("InvalidApp");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(AppManager.FlagAppEdit);
             }
 
             return instance.ToResponse();
@@ -122,12 +123,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.SetError("INVALID_APP");
+                    instance.SetError("InvalidApp");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(AppManager.FlagAppEdit);
             }
 
             return instance.ToResponse();
@@ -156,20 +157,17 @@ namespace LanPlatform.Controllers
 
             if (dataApps != null)
             {
-                BrowseResult<AppDto> apps = new BrowseResult<AppDto>();
+                BrowseResult<GabionDto> apps = new BrowseResult<GabionDto>();
 
                 apps.TotalResults = appManager.GetAppTotal();
 
-                foreach (App app in dataApps)
-                {
-                    apps.Results.Add(new AppDto(app));
-                }
+                apps.Results.AddRange(AppDto.ConvertList(dataApps));
 
                 instance.SetData(apps, "AppList");
             }
             else
             {
-                instance.SetError(AppResponseStatus.AppError, "DAO_ERROR");
+                instance.SetError(AppResponseStatus.AppError, "LoadError");
             }
 
             return instance.ToResponse();

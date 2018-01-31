@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -7,6 +8,8 @@ using System.Web;
 using System.Web.Http;
 using Newtonsoft.Json;
 using LanPlatform.Accounts;
+using LanPlatform.DAL;
+using LanPlatform.DTO;
 using LanPlatform.DTO.News;
 using LanPlatform.Models;
 using LanPlatform.Models.Requests;
@@ -29,30 +32,38 @@ namespace LanPlatform.Controllers
             UserAccount localAccount = instance.LocalAccount;
             NewsManager newsManager = new NewsManager(instance);
 
-            if (localAccount != null)
+            if (instance.LoggedIn)
             {
-                if (instance.Accounts.CheckAccess(localAccount, "NewsEditStatus"))
+                if (instance.Accounts.CheckAccess(localAccount, NewsManager.FlagEditStatus))
                 {
+                    PlatformContext context = instance.Context;
                     NewsStatus status = new NewsStatus();
 
                     status.Title = request.Title;
                     status.Content = request.Content;
 
                     // Add and save status to DB
-                    newsManager.AddStatus(status);
+                    context.NewsStatus.Add(status);
 
-                    instance.Data = new NewsStatusDto(status);
+                    try
+                    {
+                        context.SaveChanges();
+
+                        instance.SetData(new NewsStatusDto(status));
+                    }
+                    catch (Exception)
+                    {
+                        instance.SetError("SaveError");
+                    }
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-                    instance.StatusCode = "ACCESS_DENIED";
+                    instance.SetAccessDenied(NewsManager.FlagEditStatus);
                 }
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-                instance.StatusCode = "ACCESS_DENIED";
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -60,7 +71,7 @@ namespace LanPlatform.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public HttpResponseMessage GetStatusById(long id)
+        public HttpResponseMessage GetStatus(long id)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             NewsManager newsManager = new NewsManager(instance);
@@ -68,12 +79,11 @@ namespace LanPlatform.Controllers
 
             if (status != null)
             {
-                instance.Data = new NewsStatusDto(status);
+                instance.SetData(new NewsStatusDto(status));
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-                instance.StatusCode = "INVALID_STATUS";
+                instance.SetError("InvalidStatus");
             }
 
             return instance.ToResponse();
@@ -81,15 +91,15 @@ namespace LanPlatform.Controllers
 
         [HttpPost]
         [Route("{id}")]
-        public HttpResponseMessage EditStatusById(long id, [FromBody] EditNewsStatusRequest request)
+        public HttpResponseMessage EditStatus(long id, [FromBody] EditNewsStatusRequest request)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount localAccount = instance.LocalAccount;
             NewsManager newsManager = new NewsManager(instance);
 
-            if (localAccount != null)
+            if (instance.LoggedIn)
             {
-                if (instance.Accounts.CheckAccess(localAccount, "NewsEditStatus"))
+                if (instance.Accounts.CheckAccess(localAccount, NewsManager.FlagEditStatus))
                 {
                     NewsStatus status = newsManager.GetStatusById(id);
 
@@ -98,26 +108,37 @@ namespace LanPlatform.Controllers
                         status.Title = request.Title;
                         status.Content = request.Content;
 
-                        PlatformSetting statusSetting = instance.Settings.GetSettingByName("NewsStatus");
+                        try
+                        {
+                            instance.Context.SaveChanges();
 
-                        instance.Data = new NewsStatusDto(status);
+                            instance.SetData(new NewsStatusDto(status));
+                        }
+                        catch (Exception e)
+                        {
+                            if (e is OptimisticConcurrencyException)
+                            {
+                                instance.SetError("ConcurrencyError");
+                            }
+                            else
+                            {
+                                instance.SetError("SaveError");
+                            }
+                        }
                     }
                     else
                     {
-                        instance.Status = AppResponseStatus.ResponseError;
-                        instance.StatusCode = "INVALID_STATUS";
+                        instance.SetError("InvalidStatus");
                     }
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-                    instance.StatusCode = "ACCESS_DENIED";
+                    instance.SetAccessDenied(NewsManager.FlagEditStatus);
                 }
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-                instance.StatusCode = "ACCESS_DENIED";
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -132,12 +153,15 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             NewsManager newsManager = new NewsManager(instance);
 
-            instance.Data = newsManager.GetCurrentStatus();
+            NewsStatus status = newsManager.GetCurrentStatus();
 
-            if (instance.Data == null)
+            if (status != null)
             {
-                instance.Status = AppResponseStatus.ResponseError;
-                instance.StatusCode = "NEWS_NOT_FOUND";
+                instance.SetData(new NewsStatusDto(status));
+            }
+            else
+            {
+                instance.SetError("NewsNotFound");
             }
 
             return instance.ToResponse();
@@ -153,32 +177,26 @@ namespace LanPlatform.Controllers
 
             if (localAccount != null)
             {
-                // TODO: 
-                if (instance.Accounts.CheckAccess(localAccount, "NewsChangeStatus", "platform"))
+                if (instance.Accounts.CheckAccess(localAccount, NewsManager.FlagChangeStatus))
                 {
                     if (newsManager.GetStatusById(request.Id) != null)
                     {
+                        // TODO: concurrency check
                         instance.Settings.ChangeSetting("NewsStatus", request.Id.ToString());
                     }
                     else
                     {
-                        instance.Status = AppResponseStatus.ResponseError;
-
-                        instance.StatusCode = "ACCESS_STATUS";
+                        instance.SetError("InvalidStatus");
                     }
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-
-                    instance.StatusCode = "ACCESS_DENIED";
+                    instance.SetAccessDenied(NewsManager.FlagChangeStatus);
                 }
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-
-                instance.StatusCode = "ACCESS_DENIED";
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -193,9 +211,9 @@ namespace LanPlatform.Controllers
 
             page = page < 1 ? 1 : page;
 
-            List<NewsStatusDto> status = NewsStatusDto.ConvertList(newsManager.GetStatusList(page, 50));
+            List<GabionDto> status = NewsStatusDto.ConvertList(newsManager.GetStatusList(page, 50));
 
-            instance.Data = new BrowseResult<NewsStatusDto>(status, newsManager.GetStatusCount());
+            instance.SetData(new BrowseResult<GabionDto>(status, newsManager.GetStatusCount()), "NewsStatusBrowseList");
 
             return instance.ToResponse();
         }
@@ -235,14 +253,14 @@ namespace LanPlatform.Controllers
 
                     instance.SetData(new QuickLinkDto(newLink), "QuickLink");
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    instance.SetError("SAVE_ERROR");
+                    instance.SetError("SaveError");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(NewsManager.FlagEditLink);
             }
 
             return instance.ToResponse();
@@ -263,7 +281,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("INVALID_LINK");
+                instance.SetError("InvalidLink");
             }
 
             return instance.ToResponse();
@@ -296,17 +314,24 @@ namespace LanPlatform.Controllers
                     }
                     catch (Exception e)
                     {
-                        instance.SetError("CONCURRENCY_ERROR");
+                        if (e is OptimisticConcurrencyException)
+                        {
+                            instance.SetError("ConcurrencyError");
+                        }
+                        else
+                        {
+                            instance.SetError("SaveError");
+                        }
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_LINK");
+                    instance.SetError("InvalidLink");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(NewsManager.FlagEditLink);
             }
 
             return instance.ToResponse();
@@ -334,19 +359,19 @@ namespace LanPlatform.Controllers
 
                         instance.SetData(true, "bool");
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        instance.SetError("SAVE_ERROR");
+                        instance.SetError("SaveError");
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_LINK");
+                    instance.SetError("InvalidLink");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(NewsManager.FlagEditLink);
             }
 
             return instance.ToResponse();

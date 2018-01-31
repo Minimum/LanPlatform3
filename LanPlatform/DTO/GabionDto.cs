@@ -19,5 +19,7 @@ namespace LanPlatform.DTO
         {
             Id = model.Id;
         }
+
+        public abstract String GetClassname();
     }
 }

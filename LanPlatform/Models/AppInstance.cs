@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Core;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -9,6 +11,7 @@ using System.Web;
 using System.Web.Http;
 using LanPlatform.Accounts;
 using LanPlatform.DAL;
+using LanPlatform.DTO;
 using LanPlatform.Settings;
 using Newtonsoft.Json;
 
@@ -52,18 +55,22 @@ namespace LanPlatform.Models
 
         [JsonIgnore]
         public long Time { get; }
+
         [JsonIgnore]
         public bool LocalClient { get; }
 
-        // Response Data
-        public AppResponseStatus Status { get; set; }
-        public String StatusCode { get; set; }
-
-        public String DataType { get; set; }
-        public Object Data { get; set; }
+        [JsonIgnore]
+        public bool LoggedIn => LocalAccount != null;
 
         [JsonIgnore]
-        public EventHandler OnSaveFailure { get; set; }
+        public bool Anonymous => LocalAccount == null;
+
+        // Response Data
+        public AppResponseStatus Status { get; protected set; }
+        public String StatusCode { get; protected set; }
+
+        public String DataType { get; protected set; }
+        public Object Data { get; protected set; }
 
         public AppInstance(HttpRequestMessage request, HttpContext requestContext)
         {
@@ -79,8 +86,6 @@ namespace LanPlatform.Models
             DataType = "null";
             Data = null;
 
-            OnSaveFailure = delegate { };
-
             DataContext = new PlatformContext();
 
             CookieList = new List<CookieHeaderValue>();
@@ -95,6 +100,26 @@ namespace LanPlatform.Models
         {
             Data = data;
             DataType = type;
+
+            return;
+        }
+
+        public void SetData(GabionDto dto)
+        {
+            Data = dto;
+            DataType = dto.GetClassname();
+
+            return;
+        }
+
+        public void SetData(List<GabionDto> dtos)
+        {
+            Data = dtos;
+
+            GabionDto dto = dtos.FirstOrDefault();
+
+            if (dto != null)
+                DataType = dto.GetClassname() + "List";
 
             return;
         }
@@ -137,7 +162,17 @@ namespace LanPlatform.Models
         public void SetAccessDenied(String flag)
         {
             Status = AppResponseStatus.AccessDenied;
-            StatusCode = flag;
+            StatusCode = "Platform:" + flag;
+
+            return;
+        }
+
+        public void SetAccessDenied(String flag, String scope)
+        {
+            Status = AppResponseStatus.AccessDenied;
+            StatusCode = scope + ":" + flag;
+
+            return;
         }
 
         public bool CheckAccess(String flag) => Accounts.CheckAccess(flag);
@@ -146,19 +181,6 @@ namespace LanPlatform.Models
         public HttpResponseMessage ToResponse()
         {
             HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK);
-
-            try
-            {
-                Context.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                Status = AppResponseStatus.AppError;
-                
-                StatusCode = "CONCURRENCY_ERROR";
-
-                OnSaveFailure.Invoke(this, EventArgs.Empty);
-            }
 
             response.Headers.AddCookies(Cookies);
 

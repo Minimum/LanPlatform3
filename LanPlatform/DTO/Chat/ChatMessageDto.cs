@@ -49,9 +49,14 @@ namespace LanPlatform.DTO.Chat
             Message = message.Message;
         }
 
-        public static List<ChatMessageDto> ConvertList(ICollection<ChatMessage> objects)
+        public override string GetClassname()
         {
-            var models = new List<ChatMessageDto>();
+            return "ChatMessage";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<ChatMessage> objects)
+        {
+            var models = new List<GabionDto>();
 
             foreach (ChatMessage target in objects)
             {

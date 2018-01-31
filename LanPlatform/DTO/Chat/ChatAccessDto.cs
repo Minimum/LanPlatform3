@@ -47,9 +47,14 @@ namespace LanPlatform.DTO.Chat
             CanSetGreeting = access.CanSetGreeting;
         }
 
-        public static List<ChatAccessDto> ConvertList(ICollection<ChatAccess> objects)
+        public override string GetClassname()
         {
-            var models = new List<ChatAccessDto>();
+            return "ChatAccess";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<ChatAccess> objects)
+        {
+            var models = new List<GabionDto>();
 
             foreach (ChatAccess target in objects)
             {

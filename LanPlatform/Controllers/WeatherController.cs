@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using LanPlatform.Accounts;
+using LanPlatform.DTO.News;
 using LanPlatform.Models;
 using LanPlatform.News;
 
@@ -21,12 +22,11 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             NewsManager newsManager = new NewsManager(instance);
 
-            instance.Data = newsManager.GetCurrentWeatherStatus();
+            instance.SetData(new WeatherStatusDto(newsManager.GetCurrentWeatherStatus()));
 
             if (instance.Data == null)
             {
-                instance.Status = AppResponseStatus.ResponseError;
-                instance.StatusCode = "STATUS_NOT_FOUND";
+                instance.SetError("StatusNotFound");
             }
 
             return instance.ToResponse();
@@ -48,14 +48,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-                    instance.StatusCode = "ACCESS_DENIED";
+                    instance.SetAccessDenied(NewsManager.FlagChangeWeather);
                 }
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-                instance.StatusCode = "INVALID_REQUEST";
+                instance.SetError("InvalidRequest");
             }
 
             return instance.ToResponse();

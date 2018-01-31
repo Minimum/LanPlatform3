@@ -23,5 +23,22 @@ namespace LanPlatform.DTO.Accounts
             Key = session.Key;
             ExpireDate = session.ExpireDate;
         }
+
+        public override string GetClassname()
+        {
+            return "AuthSession";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<AuthSession> objects)
+        {
+            var models = new List<GabionDto>();
+
+            foreach (AuthSession target in objects)
+            {
+                models.Add(new AuthSessionDto(target));
+            }
+
+            return models;
+        }
     }
 }

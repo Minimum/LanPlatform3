@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -20,7 +21,7 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
-            if (instance.Accounts.CheckAccess(AccountManager.FlagEditRoles))
+            if (instance.CheckAccess(AccountManager.FlagEditRoles))
             {
                 UserRole newRole = new UserRole();
 
@@ -28,15 +29,22 @@ namespace LanPlatform.Controllers
 
                 instance.Accounts.AddRole(newRole);
 
-                instance.Context.SaveChanges();
+                try
+                {
+                    instance.Context.SaveChanges();
 
-                instance.SetData(new UserRoleDto(newRole), "UserRole");
+                    instance.SetData(new UserRoleDto(newRole));
+                }
+                catch (Exception)
+                {
+                    instance.SetError("SaveError");
+                }
 
                 // TODO: Log
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(AccountManager.FlagEditRoles);
             }
 
             return instance.ToResponse();
@@ -51,11 +59,11 @@ namespace LanPlatform.Controllers
 
             if (role != null)
             {
-                instance.SetData(new UserRoleDto(role), "UserRole");
+                instance.SetData(new UserRoleDto(role));
             }
             else
             {
-                instance.SetError("INVALID_ROLE");
+                instance.SetError("InvalidRole");
             }
 
             return instance.ToResponse();
@@ -67,7 +75,7 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
-            if (instance.Accounts.CheckAccess(AccountManager.FlagEditRoles))
+            if (instance.CheckAccess(AccountManager.FlagEditRoles))
             {
                 UserRole role = instance.Accounts.GetRoleById(id);
 
@@ -75,18 +83,32 @@ namespace LanPlatform.Controllers
                 {
                     role.Name = roleEdit.Name;
 
-                    instance.Context.SaveChanges();
+                    try
+                    {
+                        instance.Context.SaveChanges();
 
-                    instance.SetData(new UserRoleDto(role), "UserRole");
+                        instance.SetData(new UserRoleDto(role));
+                    }
+                    catch (Exception e)
+                    {
+                        if (e is OptimisticConcurrencyException)
+                        {
+                            instance.SetError("ConcurrencyError");
+                        }
+                        else
+                        {
+                            instance.SetError("SaveError");
+                        }
+                    }
                 }
                 else
                 {
-                    instance.SetError("INVALID_ROLE");
+                    instance.SetError("InvalidRole");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(AccountManager.FlagEditRoles);
             }
 
             return instance.ToResponse();
@@ -102,7 +124,7 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
-            if (instance.LocalAccount != null)
+            if (instance.LoggedIn)
             {
                 List<UserPermission> permissions = instance.Accounts.GetRolePermissions(id);
 
@@ -110,7 +132,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -131,7 +153,7 @@ namespace LanPlatform.Controllers
             permission.Flag = flag;
             permission.Scope = scope;
 
-            if (instance.Accounts.CheckAccess(AccountManager.FlagEditRoles))
+            if (instance.CheckAccess(AccountManager.FlagEditRoles))
             {
                 if (permission.Flag.Length > 0 && permission.Scope.Length > 0)
                 {
@@ -142,7 +164,9 @@ namespace LanPlatform.Controllers
                         UserPermission newPermission = instance.Accounts.GetPermission(id, permission.Flag,
                             permission.Scope);
 
-                        if (newPermission == null)
+                        bool success = newPermission != null;
+
+                        if (!success)
                         {
                             newPermission = new UserPermission();
 
@@ -152,24 +176,34 @@ namespace LanPlatform.Controllers
 
                             instance.Accounts.AddPermission(newPermission);
 
-                            instance.Context.SaveChanges();
+                            try
+                            {
+                                instance.Context.SaveChanges();
+
+                                success = true;
+                            }
+                            catch (Exception)
+                            {
+                                instance.SetError("SaveError");
+                            }
                         }
 
-                        instance.SetData(new UserPermissionDto(newPermission), "UserPermission");
+                        if(success)
+                            instance.SetData(new UserPermissionDto(newPermission));
                     }
                     else
                     {
-                        instance.SetError("INVALID_ROLE");
+                        instance.SetError("InvalidRole");
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_PERMISSION");
+                    instance.SetError("InvalidPermission");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(AccountManager.FlagEditRoles);
             }
 
             return instance.ToResponse();
@@ -189,16 +223,25 @@ namespace LanPlatform.Controllers
                 {
                     instance.Accounts.RemovePermission(target);
 
-                    instance.Data = true;
+                    try
+                    {
+                        instance.Context.SaveChanges();
+
+                        instance.SetData(true, "bool");
+                    }
+                    catch (Exception)
+                    {
+                        instance.SetError("SaveError");
+                    }
                 }
                 else
                 {
-                    instance.SetError("INVALID_PERMISSION");
+                    instance.SetError("InvalidPermission");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(AccountManager.FlagEditRoles);
             }
 
             return instance.ToResponse();

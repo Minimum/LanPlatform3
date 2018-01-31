@@ -72,18 +72,16 @@ namespace LanPlatform.Controllers
                 {
                     if (contentManager.CheckAccess(item, instance.LocalAccount))
                     {
-                        instance.Data = new ContentItemDto(item);
+                        instance.SetData(new ContentItemDto(item));
                     }
                     else
                     {
-                        instance.Status = AppResponseStatus.ResponseError;
-                        instance.StatusCode = "ACCESS_DENIED";
+                        instance.SetAccessDenied("ContentView");
                     }
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-                    instance.StatusCode = "CONTENT_DOES_NOT_EXIST";
+                    instance.SetError("ContentDoesNotExist");
                 }
             }
 

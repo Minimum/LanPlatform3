@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
-using LanPlatform.DAL;
+using LanPlatform.DAL.GOnline;
 using LanPlatform.DTO.GOnline.Skills;
 using LanPlatform.GOnline;
 using LanPlatform.GOnline.Skills;
@@ -24,8 +24,7 @@ namespace LanPlatform.Controllers.GOnline
 
             GoContext context = new GoContext();
 
-            instance.Data = SkillDto.ConvertList((from s in context.Skill select s).ToList());
-            instance.DataType = "SkillList";
+            instance.SetData(SkillDto.ConvertList((from s in context.Skill select s).ToList()));
 
             return instance.ToResponse();
         }
@@ -54,16 +53,16 @@ namespace LanPlatform.Controllers.GOnline
                 {
                     context.SaveChanges();
 
-                    instance.SetData(newSkill, "Skill");
+                    instance.SetData(new SkillDto(newSkill));
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    instance.SetError("SAVE_ERROR");
+                    instance.SetError("SaveError");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(SkillManager.FlagAddSkill, GoManager.FlagScope);
             }
 
             return instance.ToResponse();
@@ -90,19 +89,19 @@ namespace LanPlatform.Controllers.GOnline
 
                         instance.SetData(true, "bool");
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        instance.SetError("SAVE_ERROR");
+                        instance.SetError("SaveError");
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_SKILL");
+                    instance.SetError("InvalidSkill");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(SkillManager.FlagDeleteSkill, GoManager.FlagScope);
             }
 
             return instance.ToResponse();
@@ -115,8 +114,16 @@ namespace LanPlatform.Controllers.GOnline
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             GoContext context = new GoContext();
 
-            instance.Data = (from s in context.Skill where s.Id == id select s).SingleOrDefault();
-            instance.DataType = "Skill";
+            Skill skill = (from s in context.Skill where s.Id == id select s).SingleOrDefault();
+
+            if (skill != null)
+            {
+                instance.SetData(new SkillDto(skill));
+            }
+            else
+            {
+                instance.SetError("InvalidSkill");
+            }
 
             return instance.ToResponse();
         }
@@ -128,11 +135,12 @@ namespace LanPlatform.Controllers.GOnline
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             GoContext context = new GoContext();
 
-            instance.Data = (from ps in context.PlayerSkill
+            var skills = (from ps in context.PlayerSkill
                 join p in context.Skill on ps.Skill equals p.Id
                 where ps.Player == id
                 select new {p.Id, p.DevName, ps.Level, ps.Experience}).ToList();
-            instance.DataType = "PlayerSkillList";
+
+            instance.SetData(skills, "PlayerSkillList");
 
             return instance.ToResponse();
         }

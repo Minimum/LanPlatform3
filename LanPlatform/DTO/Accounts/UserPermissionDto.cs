@@ -27,9 +27,14 @@ namespace LanPlatform.DTO.Accounts
             Flag = permission.Flag;
         }
 
-        public static List<UserPermissionDto> ConvertList(ICollection<UserPermission> permissions)
+        public override string GetClassname()
         {
-            List<UserPermissionDto> models = new List<UserPermissionDto>();
+            return "UserPermission";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<UserPermission> permissions)
+        {
+            var models = new List<GabionDto>();
 
             foreach (UserPermission permission in permissions)
             {

@@ -15,6 +15,8 @@ namespace LanPlatform.News
         public const String FlagChangeStatus = "NewsChangeStatus";
         public const String FlagChangeWeather = "NewsChangeWeather";
 
+        public const String FlagEditStatus = "NewsEditStatus";
+
         public const String FlagEditLink = "NewsEditLink";
 
         public const String SettingCurrentStatus = "NewsCurrentStatus";

@@ -68,6 +68,30 @@ namespace LanPlatform.Content
             }
         }
 
+        public bool IsImage
+        {
+            get
+            {
+                bool success = false;
+
+                switch (Type)
+                {
+                    case ContentType.ImageBmp:
+                    case ContentType.ImageGif:
+                    case ContentType.ImageJpg:
+                    case ContentType.ImagePng:
+                    case ContentType.ImageSvg:
+                    {
+                        success = true;
+
+                        break;
+                    }
+                }
+
+                return success;
+            }
+        }
+
         public ContentItem()
         {
             Owner = 0;
@@ -77,27 +101,6 @@ namespace LanPlatform.Content
             Size = 0;
             Type = ContentType.None;
             TimeAdded = 0;
-        }
-
-        public bool IsImage()
-        {
-            bool success = false;
-
-            switch (Type)
-            {
-                case ContentType.ImageBmp:
-                case ContentType.ImageGif:
-                case ContentType.ImageJpg:
-                case ContentType.ImagePng:
-                case ContentType.ImageSvg:
-                {
-                    success = true;
-
-                    break;
-                }
-            }
-
-            return success;
         }
     }
 

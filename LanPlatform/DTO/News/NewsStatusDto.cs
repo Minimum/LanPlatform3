@@ -30,9 +30,14 @@ namespace LanPlatform.DTO.News
             Content = status.Content;
         }
 
-        public static List<NewsStatusDto> ConvertList(ICollection<NewsStatus> accounts)
+        public override string GetClassname()
         {
-            List<NewsStatusDto> models = new List<NewsStatusDto>();
+            return "NewsStatus";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<NewsStatus> accounts)
+        {
+            var models = new List<GabionDto>();
 
             foreach (NewsStatus account in accounts)
             {

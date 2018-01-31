@@ -19,9 +19,14 @@ namespace LanPlatform.DTO.Accounts
             Name = role.Name;
         }
 
-        public static List<UserRoleDto> ConvertList(ICollection<UserRole> roles)
+        public override string GetClassname()
         {
-            List<UserRoleDto> models = new List<UserRoleDto>();
+            return "UserRole";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<UserRole> roles)
+        {
+            var models = new List<GabionDto>();
 
             foreach (UserRole role in roles)
             {

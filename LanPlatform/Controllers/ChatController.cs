@@ -31,8 +31,7 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
-            instance.Data = ChatChannelDto.ConvertList(instance.Context.ChatChannel.Where(s => s.Active).ToList());
-            instance.DataType = "";
+            instance.SetData(ChatChannelDto.ConvertList(instance.Context.ChatChannel.Where(s => s.Active).ToList()), "ChatChannelList");
 
             return instance.ToResponse();
         }
@@ -88,8 +87,7 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
-            instance.Data = instance.Context.ChatChannel.Where(s => s.Id == id);
-            instance.DataType = "ChatChannel";
+            instance.SetData(new ChatChannelDto(instance.Context.ChatChannel.SingleOrDefault(s => s.Id == id)));
 
             return instance.ToResponse();
         }
@@ -224,7 +222,7 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
-            if (instance.LocalAccount != null)
+            if (instance.LoggedIn)
             {
                 PlatformContext context = instance.Context;
 
@@ -293,7 +291,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetAccessDenied("InvalidAccount");
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -312,7 +310,7 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount localAccount = instance.LocalAccount;
 
-            if (localAccount != null)
+            if (instance.LoggedIn)
             {
                 PlatformContext context = instance.Context;
 
@@ -365,7 +363,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetAccessDenied("InvalidAccount");
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -384,7 +382,7 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount localAccount = instance.LocalAccount;
 
-            if (localAccount != null)
+            if (instance.LoggedIn)
             {
                 PlatformContext context = instance.Context;
 
@@ -432,7 +430,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetAccessDenied("InvalidAccount");
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -661,7 +659,7 @@ namespace LanPlatform.Controllers
             UserAccount localAccount = instance.LocalAccount;
 
             // Check if user is logged in
-            if (localAccount != null)
+            if (instance.LoggedIn)
             {
                 PlatformContext context = instance.Context;
 
@@ -730,7 +728,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetAccessDenied("InvalidAccount");
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -749,7 +747,7 @@ namespace LanPlatform.Controllers
             UserAccount localAccount = instance.LocalAccount;
 
             // Check if user is logged in
-            if (localAccount != null)
+            if (instance.LoggedIn)
             {
                 PlatformContext context = instance.Context;
 
@@ -801,7 +799,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetAccessDenied("InvalidAccount");
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();

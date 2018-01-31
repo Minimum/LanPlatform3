@@ -35,5 +35,10 @@ namespace LanPlatform.DTO.Content
             Type = item.Type;
             TimeAdded = item.TimeAdded;
         }
+
+        public override string GetClassname()
+        {
+            return "ContentItem";
+        }
     }
 }

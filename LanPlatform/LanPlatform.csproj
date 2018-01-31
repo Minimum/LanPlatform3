@@ -317,11 +317,13 @@
     <Compile Include="Controllers\MusicController.cs" />
     <Compile Include="Controllers\NewsController.cs" />
     <Compile Include="Controllers\RoleController.cs" />
-    <Compile Include="Controllers\SiteController.cs" />
     <Compile Include="Controllers\TelemetryController.cs" />
     <Compile Include="Controllers\WeatherController.cs" />
+    <Compile Include="DAL\AccountContext.cs" />
     <Compile Include="DAL\ContentDal.cs" />
-    <Compile Include="DAL\GoContext.cs" />
+    <Compile Include="DAL\GOnline\GoContext.cs" />
+    <Compile Include="DAL\GOnline\GoInstallContext.cs" />
+    <Compile Include="DAL\InstallContext.cs" />
     <Compile Include="DAL\LogContext.cs" />
     <Compile Include="DAL\PlatformContext.cs" />
     <Compile Include="Database\DatabaseObject.cs" />
@@ -333,6 +335,7 @@
     <Compile Include="DTO\Accounts\UserRoleDto.cs" />
     <Compile Include="DTO\Apps\AppDto.cs" />
     <Compile Include="DTO\Apps\LoanerAccountDto.cs" />
+    <Compile Include="DTO\Apps\LoanerAppDto.cs" />
     <Compile Include="DTO\Chat\ChatAccessDto.cs" />
     <Compile Include="DTO\Chat\ChatChannelDto.cs" />
     <Compile Include="DTO\Chat\ChatMuteDto.cs" />
@@ -346,6 +349,7 @@
     <Compile Include="DTO\GOnline\Skills\SkillDto.cs" />
     <Compile Include="DTO\News\NewsStatusDto.cs" />
     <Compile Include="DTO\News\QuickLinkDto.cs" />
+    <Compile Include="DTO\News\WeatherStatusDto.cs" />
     <Compile Include="Events\LanEvent.cs" />
     <Compile Include="Events\LanEventGuest.cs" />
     <Compile Include="Events\LanEventManager.cs" />
@@ -397,7 +401,6 @@
     <Compile Include="Models\Requests\VerifySecretRequest.cs" />
     <Compile Include="Models\Responses\BrowseResult.cs" />
     <Compile Include="Models\Responses\LoginResult.cs" />
-    <Compile Include="Models\Responses\SiteInit.cs" />
     <Compile Include="Music\Playlist.cs" />
     <Compile Include="Music\PlaylistEntry.cs" />
     <Compile Include="Music\Song.cs" />

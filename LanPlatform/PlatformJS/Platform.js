@@ -7,7 +7,8 @@ LanPlatform.AppPath = "http://localhost:45100/";
 LanPlatform.ApiPath = LanPlatform.AppPath + "api/";
 
 LanPlatform.BeginInitialize = function () {
-    $.getJSON(LanPlatform.ApiPath + "site/init", {}, LanPlatform.Initialize);
+    // TODO: Init removed from API, query appropiate URLs instead
+    //$.getJSON(LanPlatform.ApiPath + "site/init", {}, LanPlatform.Initialize);
 
     return;
 }

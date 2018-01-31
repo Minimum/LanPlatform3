@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -16,6 +17,7 @@ namespace LanPlatform.Controllers
     [RoutePrefix("api/loaner")]
     public class LoanerController : ApiController
     {
+        // TODO: Remove this, replace with browse
         [HttpGet]
         [Route("all")]
         public HttpResponseMessage GetAllLoaners()
@@ -23,7 +25,7 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             AppManager apps = new AppManager(instance);
 
-            instance.Data = LoanerAccountDto.ConvertList(apps.GetLoanerAccounts());
+            instance.SetData(LoanerAccountDto.ConvertList(apps.GetLoanerAccounts()));
 
             return instance.ToResponse();
         }
@@ -49,16 +51,16 @@ namespace LanPlatform.Controllers
 
                     instance.Context.SaveChanges();
 
-                    instance.SetData(loaner, "LoanerAccount");
+                    instance.SetData(new LoanerAccountDto(loaner));
                 }
                 else
                 {
-                    instance.SetError("INVALID_ACCOUNT");
+                    instance.SetError("InvalidAccount");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(AppManager.FlagLoanerEdit);
             }
 
             return instance.ToResponse();
@@ -71,7 +73,7 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             AppManager apps = new AppManager(instance);
 
-            instance.Data = new LoanerAccountDto(apps.GetLoanerAccount(id));
+            instance.SetData(new LoanerAccountDto(apps.GetLoanerAccount(id)));
 
             return instance.ToResponse();
         }
@@ -94,21 +96,37 @@ namespace LanPlatform.Controllers
                         dataLoaner.Username = loaner.Username;
                         dataLoaner.Password = loaner.Password;
 
-                        instance.Context.SaveChanges();
+                        try
+                        {
+                            instance.Context.SaveChanges();
+
+                            instance.SetData(new LoanerAccountDto(dataLoaner));
+                        }
+                        catch (Exception e)
+                        {
+                            if (e is OptimisticConcurrencyException)
+                            {
+                                instance.SetError("ConcurrencyError");
+                            }
+                            else
+                            {
+                                instance.SetError("SaveError");
+                            }
+                        }
                     }
                     else
                     {
-                        instance.SetError("INVALID_ACCOUNT");
+                        instance.SetError("InvalidAccount");
                     }
                 }
                 else
                 {
-                    instance.SetError("ACCESS_DENIED");
+                    instance.SetAccessDenied(AppManager.FlagLoanerEdit);
                 }
             }
             else
             {
-                instance.SetError("INVALID_DTO");
+                instance.SetError("InvalidRequestObject");
             }
 
             return instance.ToResponse();
@@ -142,9 +160,9 @@ namespace LanPlatform.Controllers
 
                         instance.SetData(true, "bool");
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        instance.SetError("SAVE_ERROR");
+                        instance.SetError("SaveError");
                     }
                 }
                 else
@@ -154,13 +172,24 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(AppManager.FlagLoanerDelete);
             }
 
             return instance.ToResponse();
         }
 
         // Loaner apps
+
+        [HttpGet]
+        [Route("{id}/app")]
+        public HttpResponseMessage GetLoanerApps(long id)
+        {
+            AppInstance instance = new AppInstance(Request, HttpContext.Current);
+
+
+
+            return instance.ToResponse();
+        }
 
         [HttpPut]
         [Route("{id}/app/{appId}")]
@@ -190,13 +219,20 @@ namespace LanPlatform.Controllers
 
                             apps.AddLoanerApp(loanerApp);
 
-                            instance.Context.SaveChanges();
+                            try
+                            {
+                                instance.Context.SaveChanges();
 
-                            instance.SetData(loanerApp, "LoanerApp");
+                                instance.SetData(new LoanerAppDto(loanerApp), "LoanerApp");
+                            }
+                            catch (Exception)
+                            {
+                                instance.SetError("SaveError");
+                            }
                         }
                         else
                         {
-                            instance.SetError("INVALID_APP");
+                            instance.SetError("InvalidApp");
                         }
                     }
                     else
@@ -206,12 +242,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.SetError("INVALID_ACCOUNT");
+                    instance.SetError("InvalidAccount");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(AppManager.FlagLoanerEdit);
             }
 
             return instance.ToResponse();
@@ -234,23 +270,23 @@ namespace LanPlatform.Controllers
 
                     if (app != null)
                     {
-                        instance.SetData(app, "LoanerApp");
+                        instance.SetData(new LoanerAppDto(app), "LoanerApp");
 
                         apps.RemoveLoanerApp(app);
                     }
                     else
                     {
-                        instance.SetError("INVALID_APP");
+                        instance.SetError("InvalidApp");
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_ACCOUNT");
+                    instance.SetError("InvalidAccount");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(AppManager.FlagLoanerEdit);
             }
 
             return instance.ToResponse();
@@ -266,13 +302,13 @@ namespace LanPlatform.Controllers
             AppManager apps = new AppManager(instance);
             UserAccount localAccount = instance.LocalAccount;
 
-            if (localAccount == null)
+            if (instance.Anonymous)
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied("AnonymousUser");
             }
             else if (apps.GetUserCheckoutCount(localAccount) > 0)
             {
-                instance.SetError("CHECKOUT_LIMIT_HIT");
+                instance.SetError("CheckoutLimitHit");
             }
             else if (id > 0)
             {
@@ -280,11 +316,11 @@ namespace LanPlatform.Controllers
 
                 if (loaner == null)
                 {
-                    instance.SetError("INVALID_ACCOUNT");
+                    instance.SetError("InvalidAccount");
                 }
                 else if (loaner.CheckoutUser != 0)
                 {
-                    instance.SetError("ACCOUNT_IN_USE");
+                    instance.SetError("AccountInUse");
                 }
                 else
                 {
@@ -297,7 +333,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("INVALID_ACCOUNT");
+                instance.SetError("InvalidAccount");
             }
 
             return instance.ToResponse();
@@ -311,9 +347,9 @@ namespace LanPlatform.Controllers
             AppManager apps = new AppManager(instance);
             UserAccount localAccount = instance.LocalAccount;
 
-            if (localAccount == null)
+            if (instance.Anonymous)
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied("AnonymousUser");
             }
             else if (id > 0)
             {
@@ -321,11 +357,11 @@ namespace LanPlatform.Controllers
 
                 if (loaner == null)
                 {
-                    instance.SetError("INVALID_ACCOUNT");
+                    instance.SetError("InvalidLoaner");
                 }
                 else if (loaner.CheckoutUser != localAccount.Id && !instance.Accounts.CheckAccess(localAccount, AppManager.FlagLoanerCheckout))
                 {
-                    instance.SetError("ACCESS_DENIED");
+                    instance.SetAccessDenied(AppManager.FlagLoanerCheckout);
                 }
                 else
                 {
@@ -337,7 +373,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("INVALID_ACCOUNT");
+                instance.SetError("InvalidLoaner");
             }
 
             return instance.ToResponse();
@@ -365,20 +401,17 @@ namespace LanPlatform.Controllers
                     }
                     else
                     {
-                        instance.Status = AppResponseStatus.ResponseError;
-                        instance.StatusCode = "INVALID_CHALLENGE";
+                        instance.SetError("InvalidChallenge");
                     }
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-                    instance.StatusCode = "INVALID_ACCOUNT";
+                    instance.SetError("InvalidLoaner");
                 }
             }
             else
             {
-                instance.Status = AppResponseStatus.AccessDenied;
-                instance.StatusCode = AppManager.FlagLoanerSteamCode;
+                instance.SetAccessDenied(AppManager.FlagLoanerSteamCode);
             }
 
             return instance.ToResponse();

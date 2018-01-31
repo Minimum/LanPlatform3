@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -42,19 +43,19 @@ namespace LanPlatform.Controllers
 
                         instance.SetData(new LanEventDto(newEvent), "LanEvent");
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        instance.SetError("SAVE_ERROR");
+                        instance.SetError("SaveError");
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_DTO");
+                    instance.SetError("InvalidRequestObject");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(LanEventManager.FlagCreateEvent);
             }
 
             return instance.ToResponse();
@@ -67,11 +68,11 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             LanEventManager events = new LanEventManager(instance);
 
-            instance.Data = events.GetEventById(id);
+            instance.SetData(new LanEventDto(events.GetEventById(id)));
 
             if (instance.Data == null)
             {
-                instance.SetError("INVALID_EVENT");
+                instance.SetError("InvalidEvent");
             }
 
             return instance.ToResponse();
@@ -105,22 +106,29 @@ namespace LanPlatform.Controllers
                         }
                         catch (Exception e)
                         {
-                            instance.SetError("SAVE_ERROR");
+                            if (e is OptimisticConcurrencyException)
+                            {
+                                instance.SetError("ConcurrencyError");
+                            }
+                            else
+                            {
+                                instance.SetError("SaveError");
+                            }
                         }
                     }
                     else
                     {
-                        instance.SetError("INVALID_EVENT");
+                        instance.SetError("InvalidEvent");
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_DTO");
+                    instance.SetError("InvalidRequestObject");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(LanEventManager.FlagEditEvent);
             }
 
             return instance.ToResponse();
@@ -147,19 +155,19 @@ namespace LanPlatform.Controllers
 
                         instance.SetData(true, "bool");
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        instance.SetError("SAVE_ERROR");
+                        instance.SetError("SaveError");
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_EVENT");
+                    instance.SetError("InvalidEvent");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied( LanEventManager.FlagDeleteEvent);
             }
 
             return instance.ToResponse();
@@ -196,8 +204,6 @@ namespace LanPlatform.Controllers
 
                             events.AddEventGuest(record);
 
-                            // TODO: Handle concurrency issues w/ target account
-
                             // Adjust target's total events if necessary
                             if (record.Arrived > 0)
                             {
@@ -212,7 +218,14 @@ namespace LanPlatform.Controllers
                             }
                             catch (Exception e)
                             {
-                                instance.SetError("SAVE_ERROR");
+                                if (e is OptimisticConcurrencyException)
+                                {
+                                    instance.SetError("ConcurrencyError");
+                                }
+                                else
+                                {
+                                    instance.SetError("SaveError");
+                                }
                             }
                         }
                         else
@@ -222,17 +235,17 @@ namespace LanPlatform.Controllers
                     }
                     else
                     {
-                        instance.SetError("INVALID_USER");
+                        instance.SetError("InvalidUser");
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_EVENT");
+                    instance.SetError("InvalidEvent");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(LanEventManager.FlagCreateGuest);
             }
 
             return instance.ToResponse();
@@ -255,7 +268,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("INVALID_EVENT");
+                instance.SetError("InvalidEvent");
             }
 
             return instance.ToResponse();
@@ -276,7 +289,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("INVALID_EVENT");
+                instance.SetError("InvalidEvent");
             }
 
             return instance.ToResponse();
@@ -310,8 +323,6 @@ namespace LanPlatform.Controllers
 
                             if (editedGuest.Arrived != guest.Arrived)
                             {
-                                // TODO: Handle concurrency issues w/ target account
-
                                 // Adjust target's total events if necessary
                                 if (guest.Arrived == 0)
                                 {
@@ -340,22 +351,29 @@ namespace LanPlatform.Controllers
                         }
                         catch (Exception e)
                         {
-                            instance.SetError("SAVE_ERROR");
+                            if (e is OptimisticConcurrencyException)
+                            {
+                                instance.SetError("ConcurrencyError");
+                            }
+                            else
+                            {
+                                instance.SetError("SaveError");
+                            }
                         }
                     }
                     else
                     {
-                        instance.SetError("INVALID_GUEST");
+                        instance.SetError("InvalidGuest");
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_EVENT");
+                    instance.SetError("InvalidEvent");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(LanEventManager.FlagEditGuest);
             }
 
             return instance.ToResponse();
@@ -380,8 +398,6 @@ namespace LanPlatform.Controllers
                     {
                         UserAccount target = instance.Accounts.GetAccount(guestId);
 
-                        // TODO: Handle concurrency issues w/ target account
-
                         // Adjust target's total events if necessary
                         if (target != null && guest.Arrived > 0)
                         {
@@ -398,7 +414,14 @@ namespace LanPlatform.Controllers
                         }
                         catch (Exception e)
                         {
-                            instance.SetError("SAVE_ERROR");
+                            if (e is OptimisticConcurrencyException)
+                            {
+                                instance.SetError("ConcurrencyError");
+                            }
+                            else
+                            {
+                                instance.SetError("SaveError");
+                            }
                         }
                     }
                     else
@@ -408,12 +431,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.SetError("INVALID_EVENT");
+                    instance.SetError("InvalidEvent");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(LanEventManager.FlagDeleteGuest);
             }
 
             return instance.ToResponse();
@@ -426,11 +449,11 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             LanEventManager events = new LanEventManager(instance);
 
-            instance.Data = events.GetCurrentEvent();
+            instance.SetData(new LanEventDto(events.GetCurrentEvent()));
 
             if (instance.Data == null)
             {
-                instance.SetError("INVALID_EVENT");
+                instance.SetError("InvalidEvent");
             }
 
             return instance.ToResponse();
@@ -444,7 +467,7 @@ namespace LanPlatform.Controllers
             LanEventManager events = new LanEventManager(instance);
             UserAccount localAccount = instance.LocalAccount;
 
-            if (localAccount != null && instance.LocalClient)
+            if (instance.LoggedIn && instance.LocalClient)
             {
                 LanEvent lanEvent = events.GetCurrentEvent();
 
@@ -489,12 +512,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.SetError("NO_EVENT");
+                    instance.SetError("NoEvent");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -525,17 +548,24 @@ namespace LanPlatform.Controllers
                     }
                     catch (Exception e)
                     {
-                        instance.SetError("SAVE_ERROR");
+                        if (e is OptimisticConcurrencyException)
+                        {
+                            instance.SetError("ConcurrencyError");
+                        }
+                        else
+                        {
+                            instance.SetError("SaveError");
+                        }
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_EVENT");
+                    instance.SetError("InvalidEvent");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied(LanEventManager.FlagSetCurrentEvent);
             }
 
             return instance.ToResponse();

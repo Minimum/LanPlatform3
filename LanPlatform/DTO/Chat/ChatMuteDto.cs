@@ -33,9 +33,14 @@ namespace LanPlatform.DTO.Chat
             Admin = mute.Admin;
         }
 
-        public static List<ChatMuteDto> ConvertList(ICollection<ChatMute> objects)
+        public override string GetClassname()
         {
-            var models = new List<ChatMuteDto>();
+            return "ChatMute";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<ChatMute> objects)
+        {
+            var models = new List<GabionDto>();
 
             foreach (ChatMute target in objects)
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using LanPlatform.Auth;
 
 namespace LanPlatform.DTO.Accounts
@@ -19,6 +20,23 @@ namespace LanPlatform.DTO.Accounts
         {
             Username = auth.Username;
             Password = "";
+        }
+
+        public override string GetClassname()
+        {
+            return "AuthUsername";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<AuthUsername> objects)
+        {
+            var models = new List<GabionDto>();
+
+            foreach (AuthUsername target in objects)
+            {
+                models.Add(new AuthUsernameDto(target));
+            }
+
+            return models;
         }
     }
 }

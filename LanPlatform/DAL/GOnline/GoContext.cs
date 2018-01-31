@@ -5,7 +5,7 @@ using System.Linq;
 using System.Web;
 using LanPlatform.GOnline.Skills;
 
-namespace LanPlatform.DAL
+namespace LanPlatform.DAL.GOnline
 {
     public class GoContext : DbContext
     {

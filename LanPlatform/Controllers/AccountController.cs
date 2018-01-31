@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -8,6 +9,8 @@ using System.Web.Http;
 using LanPlatform.Content;
 using LanPlatform.Accounts;
 using LanPlatform.Auth;
+using LanPlatform.DAL;
+using LanPlatform.DTO;
 using LanPlatform.DTO.Accounts;
 using LanPlatform.Models;
 using LanPlatform.Models.Requests;
@@ -58,9 +61,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-
-                instance.StatusCode = "ACCESS_DENIED";
+                instance.SetAccessDenied(AccountManager.FlagCreateAccount);
             }
 
             return instance.ToResponse();
@@ -68,7 +69,7 @@ namespace LanPlatform.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public HttpResponseMessage GetAccountById(long id)
+        public HttpResponseMessage GetAccount(long id)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
@@ -82,14 +83,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-                    instance.StatusCode = "INVALID_ACCOUNT";
+                    instance.SetError("InvalidAccount");
                 }
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-                instance.StatusCode = "INVALID_ACCOUNT";
+                instance.SetError("InvalidAccount");
             }
 
             return instance.ToResponse();
@@ -102,7 +101,7 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount localAccount = instance.LocalAccount;
 
-            if (localAccount != null && userAccount != null)
+            if (instance.LoggedIn && userAccount != null)
             {
                 UserAccount targetAccount = instance.Accounts.GetAccount(id);
 
@@ -247,29 +246,37 @@ namespace LanPlatform.Controllers
                             }
                         }
 
-                        instance.Context.SaveChanges();
+                        try
+                        {
+                            instance.Context.SaveChanges();
 
-                        instance.SetData(new UserAccountDto(targetAccount), "UserAccount");
+                            instance.SetData(new UserAccountDto(targetAccount), "UserAccount");
+                        }
+                        catch (Exception e)
+                        {
+                            if (e is OptimisticConcurrencyException)
+                            {
+                                instance.SetError("ConcurrencyError");
+                            }
+                            else
+                            {
+                                instance.SetError("SaveError");
+                            }
+                        }
                     }
                     else
                     {
-                        instance.Status = AppResponseStatus.ResponseError;
-
-                        instance.StatusCode = "ACCESS_DENIED";
+                        instance.SetAccessDenied(AccountManager.FlagEditAccountBasic);
                     }
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-
-                    instance.StatusCode = "INVALID_ACCOUNT";
+                    instance.SetError("InvalidAccount");
                 }
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-
-                instance.StatusCode = "ACCESS_DENIED";
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -284,34 +291,38 @@ namespace LanPlatform.Controllers
 
             UserAccount account = instance.LocalAccount;
 
-            if (account != null)
+            if (instance.LoggedIn)
             {
-                ContentItem content = contentManager.GetItemById(id);
-
-                if (content != null && content.Visible)
+                if (account.Id == id || instance.CheckAccess(AccountManager.FlagEditAccountBasic))
                 {
-                    if (content.IsImage())
-                    {
-                        account.Avatar = id;
+                    ContentItem content = contentManager.GetItemById(id);
 
-                        instance.SetData(true, "bool");
+                    if (content != null && content.Visible)
+                    {
+                        if (content.IsImage)
+                        {
+                            account.Avatar = id;
+
+                            instance.SetData(true, "bool");
+                        }
+                        else
+                        {
+                            instance.SetError("InvalidContentType");
+                        }
                     }
                     else
                     {
-                        instance.Status = AppResponseStatus.ResponseError;
-                        instance.StatusCode = "INVALID_CONTENT_TYPE";
+                        instance.SetError("InvalidContent");
                     }
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-                    instance.StatusCode = "INVALID_ID";
+                    instance.SetAccessDenied(AccountManager.FlagEditAccountBasic);
                 }
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-                instance.StatusCode = "ACCESS_DENIED";
+                instance.SetAccessDenied("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -335,12 +346,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.SetError("INVALID_ACCOUNT");
+                    instance.SetError("InvalidAccount");
                 }
             }
             else
             {
-                instance.SetError("INVALID_ACCOUNT");
+                instance.SetError("InvalidAccount");
             }
 
             return instance.ToResponse();
@@ -362,10 +373,11 @@ namespace LanPlatform.Controllers
 
                     if (roles.All(s => s.Id != roleId))
                     {
-                        UserRoleAccess access = new UserRoleAccess();
-
-                        access.Role = roleId;
-                        access.User = id;
+                        UserRoleAccess access = new UserRoleAccess
+                        {
+                            Role = roleId,
+                            User = id
+                        };
 
                         instance.Accounts.AddAccountRoleAccess(access);
 
@@ -375,9 +387,9 @@ namespace LanPlatform.Controllers
 
                             instance.SetData(true, "bool");
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
-                            instance.SetError("SAVE_ERROR");
+                            instance.SetError("SaveError");
                         }
                     }
                     else
@@ -387,12 +399,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.SetError("ACCESS_DENIED");
+                    instance.SetAccessDenied(AccountManager.FlagEditAccountAdvanced);
                 }
             }
             else
             {
-                instance.SetError("INVALID_ACCOUNT");
+                instance.SetError("InvalidAccount");
             }
 
             return instance.ToResponse();
@@ -403,7 +415,6 @@ namespace LanPlatform.Controllers
         public HttpResponseMessage RemoveRole(long id, long roleId)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
-
             UserAccount target = instance.Accounts.GetAccount(id);
 
             if (target != null)
@@ -411,41 +422,30 @@ namespace LanPlatform.Controllers
                 if (instance.Accounts.CheckAccess(AccountManager.FlagEditAccountAdvanced)
                     && (!target.Root || target.Id == instance.LocalAccount.Id))
                 {
-                    List<UserRoleAccess> roles = instance.Accounts.GetAccountRoleAccess(id);
-                    bool success = true;
+                    PlatformContext context = instance.Context;
+                    List<UserRoleAccess> roles = (from a in context.AccountRole where a.User == id && a.Role == roleId select a).ToList();
 
-                    foreach (UserRoleAccess role in roles)
+                    context.AccountRole.RemoveRange(roles);
+
+                    try
                     {
-                        if (role.Role == roleId)
-                        {
-                            instance.Accounts.RemoveRoleAccess(role);
+                        context.SaveChanges();
 
-                            try
-                            {
-                                instance.Context.SaveChanges();
-                            }
-                            catch (Exception e)
-                            {
-                                instance.SetError(AppResponseStatus.AppError, "SAVE_ERROR");
-
-                                success = false;
-                            }
-
-                            break;
-                        }
-                    }
-
-                    if(success)
                         instance.SetData(true, "bool");
+                    }
+                    catch (Exception)
+                    {
+                        instance.SetError("SaveError");
+                    }
                 }
                 else
                 {
-                    instance.SetError("ACCESS_DENIED");
+                    instance.SetAccessDenied(AccountManager.FlagEditAccountAdvanced);
                 }
             }
             else
             {
-                instance.SetError("INVALID_ACCOUNT");
+                instance.SetError("InvalidAccount");
             }
 
             return instance.ToResponse();
@@ -468,12 +468,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.SetError("INVALID_ACCOUNT");
+                    instance.SetError("InvalidAccount");
                 }
             }
             else
             {
-                instance.SetError("INVALID_ACCOUNT");
+                instance.SetError("InvalidAccount");
             }
 
             return instance.ToResponse();
@@ -496,12 +496,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.SetError("INVALID_ACCOUNT");
+                    instance.SetError("InvalidAccount");
                 }
             }
             else
             {
-                instance.SetError("INVALID_ACCOUNT");
+                instance.SetError("InvalidAccount");
             }
 
             return instance.ToResponse();
@@ -522,12 +522,12 @@ namespace LanPlatform.Controllers
                 }
                 else
                 {
-                    instance.SetError("INVALID_ACCOUNT");
+                    instance.SetError("InvalidAccount");
                 }
             }
             else
             {
-                instance.SetError("INVALID_ACCOUNT");
+                instance.SetError("InvalidAccount");
             }
 
             return instance.ToResponse();
@@ -557,38 +557,27 @@ namespace LanPlatform.Controllers
                         if (!targetAccount.Root || targetAccount.Id == localAccount.Id)
                         {
                             List<AuthUsername> usernames = instance.Accounts.GetAccountUsernames(targetAccount);
-                            List<AuthUsernameDto> usernameModels = new List<AuthUsernameDto>();
 
-                            // Convert usernames to specified username model to protect hashed passwords
-                            foreach (AuthUsername username in usernames)
-                            {
-                                usernameModels.Add(new AuthUsernameDto(username));
-                            }
-
-                            instance.SetData(usernameModels, "AuthUsernameList");
+                            instance.SetData(AuthUsernameDto.ConvertList(usernames), "AuthUsernameList");
                         }
                         else
                         {
-                            instance.Status = AppResponseStatus.ResponseError;
-                            instance.StatusCode = "ACCESS_DENIED";
+                            instance.SetError("TargetImmunity");
                         }
                     }
                     else
                     {
-                        instance.Status = AppResponseStatus.ResponseError;
-                        instance.StatusCode = "INVALID_ACCOUNT";
+                        instance.SetError("InvalidAccount");
                     }
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-                    instance.StatusCode = "ACCESS_DENIED";
+                    instance.SetAccessDenied(AccountManager.FlagEditUsername);
                 }
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-                instance.StatusCode = "INVALID_REQUEST";
+                instance.SetError("InvalidRequest");
             }
 
             return instance.ToResponse();
@@ -620,38 +609,40 @@ namespace LanPlatform.Controllers
                             {
                                 AuthUsername username = instance.Accounts.CreateUsername(id, request.Username, request.Password);
 
-                                instance.Context.SaveChanges();
+                                try
+                                {
+                                    instance.Context.SaveChanges();
 
-                                instance.SetData(new AuthUsernameDto(username), "AuthUsername");
+                                    instance.SetData(new AuthUsernameDto(username), "AuthUsername");
+                                }
+                                catch (Exception)
+                                {
+                                    instance.SetError("SaveError");
+                                }
                             }
                             else
                             {
-                                instance.Status = AppResponseStatus.ResponseError;
-                                instance.StatusCode = "USERNAME_EXISTS";
+                                instance.SetError("UsernameExists");
                             }
                         }
                         else
                         {
-                            instance.Status = AppResponseStatus.ResponseError;
-                            instance.StatusCode = "ACCESS_DENIED";
+                            instance.SetError("TargetImmunity");
                         }
                     }
                     else
                     {
-                        instance.Status = AppResponseStatus.ResponseError;
-                        instance.StatusCode = "INVALID_ACCOUNT";
+                        instance.SetError("InvalidAccount");
                     }
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-                    instance.StatusCode = "ACCESS_DENIED";
+                    instance.SetAccessDenied(AccountManager.FlagEditUsername);
                 }
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-                instance.StatusCode = "INVALID_REQUEST";
+                instance.SetError("InvalidRequest");
             }
 
             return instance.ToResponse();
@@ -692,27 +683,34 @@ namespace LanPlatform.Controllers
                             }
                             catch (Exception e)
                             {
-                                instance.SetError("SAVE_ERROR");
+                                if (e is OptimisticConcurrencyException)
+                                {
+                                    instance.SetError("ConcurrencyError");
+                                }
+                                else
+                                {
+                                    instance.SetError("SaveError");
+                                }
                             }
                         }
                         else
                         {
-                            instance.SetError("INVALID_USERNAME");
+                            instance.SetError("InvalidUsername");
                         }
                     }
                     else
                     {
-                        instance.SetError("ACCESS_DENIED");
+                        instance.SetAccessDenied(AccountManager.FlagEditUsername);
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_ACCOUNT");
+                    instance.SetError("InvalidAccount");
                 }
             }
             else
             {
-                instance.SetError("INVALID_REQUEST");
+                instance.SetError("InvalidRequest");
             }
 
             return instance.ToResponse();
@@ -743,24 +741,24 @@ namespace LanPlatform.Controllers
 
                             instance.SetData(true, "bool");
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
-                            instance.SetError("SAVE_ERROR");
+                            instance.SetError("SaveError");
                         }
                     }
                     else
                     {
-                        instance.SetError("INVALID_USERNAME");
+                        instance.SetError("InvalidUsername");
                     }
                 }
                 else
                 {
-                    instance.SetError("ACCESS_DENIED");
+                    instance.SetAccessDenied(AccountManager.FlagEditUsername);
                 }
             }
             else
             {
-                instance.SetError("INVALID_ACCOUNT");
+                instance.SetError("InvalidAccount");
             }
 
             return instance.ToResponse();
@@ -790,37 +788,27 @@ namespace LanPlatform.Controllers
                         if (!targetAccount.Root || targetAccount.Id == localAccount.Id)
                         {
                             List<AuthSession> sessions = instance.Accounts.GetAccountSessions(targetAccount);
-                            List<AuthSessionDto> sessionModels = new List<AuthSessionDto>();
 
-                            foreach (AuthSession session in sessions)
-                            {
-                                sessionModels.Add(new AuthSessionDto(session));
-                            }
-
-                            instance.SetData(sessionModels, "AuthSessionList");
+                            instance.SetData(AuthSessionDto.ConvertList(sessions), "AuthSessionList");
                         }
                         else
                         {
-                            instance.Status = AppResponseStatus.ResponseError;
-                            instance.StatusCode = "ACCESS_DENIED";
+                            instance.SetError("TargetImmunity");
                         }
                     }
                     else
                     {
-                        instance.Status = AppResponseStatus.ResponseError;
-                        instance.StatusCode = "INVALID_ACCOUNT";
+                        instance.SetError("InvalidAccount");
                     }
                 }
                 else
                 {
-                    instance.Status = AppResponseStatus.ResponseError;
-                    instance.StatusCode = "ACCESS_DENIED";
+                    instance.SetAccessDenied(AccountManager.FlagEditSession);
                 }
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-                instance.StatusCode = "INVALID_REQUEST";
+                instance.SetError("InvalidRequest");
             }
 
             return instance.ToResponse();
@@ -842,14 +830,14 @@ namespace LanPlatform.Controllers
 
                     instance.SetData(new AuthSessionDto(session), "AuthSession");
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    instance.SetError("SAVE_ERROR");
+                    instance.SetError("SaveError");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied("InvalidUser");
             }
 
             return instance.ToResponse();
@@ -875,19 +863,19 @@ namespace LanPlatform.Controllers
 
                         instance.SetData(true, "bool");
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        instance.SetError("SAVE_ERROR");
+                        instance.SetError("SaveError");
                     }
                 }
                 else
                 {
-                    instance.SetError("INVALID_SESSION");
+                    instance.SetError("InvalidSession");
                 }
             }
             else
             {
-                instance.SetError("ACCESS_DENIED");
+                instance.SetAccessDenied("InvalidUser");
             }
 
             return instance.ToResponse();
@@ -918,20 +906,17 @@ namespace LanPlatform.Controllers
 
             if (dataAccounts != null)
             {
-                BrowseResult<UserAccountDto> accounts = new BrowseResult<UserAccountDto>();
+                BrowseResult<GabionDto> accounts = new BrowseResult<GabionDto>();
 
                 accounts.TotalResults = instance.Accounts.GetAccountCount();
 
-                foreach (UserAccount account in dataAccounts)
-                {
-                    accounts.Results.Add(new UserAccountDto(account));
-                }
+                accounts.AddRange(UserAccountDto.ConvertList(dataAccounts));
 
-                instance.SetData(accounts, "UserAccountList");
+                instance.SetData(accounts, "UserAccountBrowseList");
             }
             else
             {
-                instance.SetError(AppResponseStatus.AppError, "DAO_ERROR");
+                instance.SetError(AppResponseStatus.AppError, "LoadError");
             }
 
             return instance.ToResponse();
@@ -945,15 +930,13 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
 
-            if (instance.LocalAccount != null)
+            if (instance.LoggedIn)
             {
                 instance.SetData(new UserAccountDto(instance.LocalAccount), "UserAccount");
             }
             else
             {
-                instance.Status = AppResponseStatus.ResponseError;
-
-                instance.StatusCode = "INVALID_ACCOUNT";
+                instance.SetError("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -966,9 +949,13 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount localAccount = instance.LocalAccount;
 
-            if (localAccount != null)
+            if (instance.LoggedIn)
             {
                 instance.SetData(instance.Accounts.CheckAccess(localAccount, flag, scope, false), "bool");
+            }
+            else
+            {
+                instance.SetError("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -982,7 +969,7 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             
-            if (instance.LocalAccount != null)
+            if (instance.LoggedIn)
             {
                 HttpCookie sessionId = HttpContext.Current.Request.Cookies["LPSessionId"];
 
@@ -1029,9 +1016,7 @@ namespace LanPlatform.Controllers
             {
                 // TODO: Log failed attempt
                 
-                instance.Status = AppResponseStatus.ResponseError;
-
-                instance.StatusCode = "INVALID_ACCOUNT";
+                instance.SetError("InvalidAccount");
             }
 
             return instance.ToResponse();

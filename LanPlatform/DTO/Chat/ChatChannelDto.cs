@@ -27,9 +27,14 @@ namespace LanPlatform.DTO.Chat
             Active = channel.Active;
         }
 
-        public static List<ChatChannelDto> ConvertList(ICollection<ChatChannel> objects)
+        public override string GetClassname()
         {
-            var models = new List<ChatChannelDto>();
+            return "ChatChannel";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<ChatChannel> objects)
+        {
+            var models = new List<GabionDto>();
 
             foreach (ChatChannel target in objects)
             {

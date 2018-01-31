@@ -36,9 +36,14 @@ namespace LanPlatform.DTO.GOnline.Skills
             LevelModifier = skill.LevelModifier;
         }
 
-        public static List<SkillDto> ConvertList(ICollection<Skill> objects)
+        public override string GetClassname()
         {
-            var models = new List<SkillDto>();
+            return "Skill";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<Skill> objects)
+        {
+            var models = new List<GabionDto>();
 
             foreach (Skill target in objects)
             {

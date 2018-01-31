@@ -33,9 +33,14 @@ namespace LanPlatform.DTO.Apps
             DownloadInfo = app.DownloadInfo;
         }
 
-        public static List<AppDto> ConvertList(ICollection<App> objects)
+        public override string GetClassname()
         {
-            var models = new List<AppDto>();
+            return "App";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<App> objects)
+        {
+            var models = new List<GabionDto>();
 
             foreach (App target in objects)
             {

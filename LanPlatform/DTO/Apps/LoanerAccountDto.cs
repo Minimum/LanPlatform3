@@ -10,15 +10,11 @@ namespace LanPlatform.DTO.Apps
         public String Password { get; set; }
         public long CheckoutUser { get; set; }
 
-        public List<AppDto> Apps { get; set; }
-
         public LoanerAccountDto()
         {
             Username = "";
             Password = "";
             CheckoutUser = 0;
-
-            Apps = new List<AppDto>();
         }
 
         public LoanerAccountDto(LoanerAccount account)
@@ -27,13 +23,16 @@ namespace LanPlatform.DTO.Apps
             Username = account.Username;
             Password = account.Password;
             CheckoutUser = account.CheckoutUser;
-
-            Apps = AppDto.ConvertList(account.Apps);
         }
 
-        public static List<LoanerAccountDto> ConvertList(ICollection<LoanerAccount> objects)
+        public override string GetClassname()
         {
-            List<LoanerAccountDto> models = new List<LoanerAccountDto>();
+            return "LoanerAccount";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<LoanerAccount> objects)
+        {
+            var models = new List<GabionDto>();
 
             foreach (LoanerAccount target in objects)
             {

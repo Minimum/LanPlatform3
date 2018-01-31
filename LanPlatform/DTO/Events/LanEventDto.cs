@@ -25,9 +25,14 @@ namespace LanPlatform.DTO.Events
             EndTime = lanEvent.EndTime;
         }
 
-        public static List<LanEventDto> ConvertList(ICollection<LanEvent> objects)
+        public override string GetClassname()
         {
-            var models = new List<LanEventDto>();
+            return "LanEvent";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<LanEvent> objects)
+        {
+            var models = new List<GabionDto>();
 
             foreach (LanEvent target in objects)
             {

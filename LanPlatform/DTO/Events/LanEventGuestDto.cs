@@ -33,9 +33,14 @@ namespace LanPlatform.DTO.Events
             Departed = guest.Departed;
         }
 
-        public static List<LanEventGuestDto> ConvertList(ICollection<LanEventGuest> objects)
+        public override string GetClassname()
         {
-            var models = new List<LanEventGuestDto>();
+            return "LanEventGuest";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<LanEventGuest> objects)
+        {
+            var models = new List<GabionDto>();
 
             foreach (LanEventGuest target in objects)
             {

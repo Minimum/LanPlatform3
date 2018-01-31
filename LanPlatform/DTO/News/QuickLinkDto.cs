@@ -30,9 +30,14 @@ namespace LanPlatform.DTO.News
             Local = link.Local;
         }
 
-        public static List<QuickLinkDto> ConvertList(ICollection<QuickLink> objects)
+        public override string GetClassname()
         {
-            var models = new List<QuickLinkDto>();
+            return "QuickLink";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<QuickLink> objects)
+        {
+            var models = new List<GabionDto>();
 
             foreach (QuickLink target in objects)
             {

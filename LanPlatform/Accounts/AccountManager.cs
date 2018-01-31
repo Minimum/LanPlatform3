@@ -398,7 +398,7 @@ namespace LanPlatform.Accounts
             {
                 Context.SaveChanges();
             }
-            catch (Exception e) { }
+            catch (Exception) { }
 
             return;
         }

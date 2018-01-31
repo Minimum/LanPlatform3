@@ -98,9 +98,14 @@ namespace LanPlatform.DTO.Accounts
             AwardsXp = account.AwardsXp;
         }
 
-        public static List<UserAccountDto> ConvertList(ICollection<UserAccount> accounts)
+        public override string GetClassname()
         {
-            List<UserAccountDto> models = new List<UserAccountDto>();
+            return "UserAccount";
+        }
+
+        public static List<GabionDto> ConvertList(ICollection<UserAccount> accounts)
+        {
+            var models = new List<GabionDto>();
 
             foreach (UserAccount account in accounts)
             {
