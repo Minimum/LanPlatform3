@@ -10,6 +10,7 @@ using LanPlatform.Content;
 using LanPlatform.Accounts;
 using LanPlatform.Auth;
 using LanPlatform.DAL;
+using LanPlatform.DAL.Logs;
 using LanPlatform.DTO;
 using LanPlatform.DTO.Accounts;
 using LanPlatform.Models;
@@ -23,13 +24,20 @@ namespace LanPlatform.Controllers
     {
         // Basic account actions
 
+        /*
+         *  PUT api/account
+         *  ---
+         *  Info: Create a new user account.
+         *  Access: Platform:AccountCreate
+         */
         [HttpPut]
         [Route("")]
         public HttpResponseMessage CreateAccount([FromBody] UserAccountDto dto)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            AccountContext context = new AccountContext();
 
-            if (instance.Accounts.CheckAccess(instance.LocalAccount, AccountManager.FlagCreateAccount))
+            if (instance.CheckAccess(AccountManager.FlagCreateAccount))
             {
                 UserAccount account = new UserAccount();
 
@@ -48,16 +56,28 @@ namespace LanPlatform.Controllers
                 account.RemoteEvents = dto.RemoteEvents;
                 account.LastEvent = dto.LastEvent;
                 account.DisplayName = dto.DisplayName;
+                // CustomUrl (default)
+                // LastActive (default)
+                // Avatar (default)
                 account.Visibility = dto.Visibility;
 
                 account.AwardsEnabled = dto.AwardsEnabled;
                 account.AwardsXpEnabled = dto.AwardsXpEnabled;
+                // AwardsLevel (default)
+                // AwardsXp (default)
 
-                instance.Accounts.AddAccount(account);
+                context.Account.Add(account);
 
-                instance.Context.SaveChanges();
+                try
+                {
+                    context.SaveChanges();
 
-                instance.SetData(new UserAccountDto(account), "UserAccount");
+                    instance.SetData(new UserAccountDto(account), "UserAccount");
+                }
+                catch (Exception)
+                {
+                    instance.SetError("SaveError");
+                }
             }
             else
             {
@@ -67,6 +87,11 @@ namespace LanPlatform.Controllers
             return instance.ToResponse();
         }
 
+        /*
+         *  GET api/account/{accountId}
+         *  ---
+         *  Info: Get a user account info.
+         */
         [HttpGet]
         [Route("{id}")]
         public HttpResponseMessage GetAccount(long id)
@@ -75,11 +100,22 @@ namespace LanPlatform.Controllers
 
             if (id > 0)
             {
-                UserAccount account = instance.Accounts.GetAccountReadOnly(id);
+                AccountContext context = new AccountContext();
+
+                UserAccount account = (from a in context.Account where a.Id == id select a).FirstOrDefault();
 
                 if (account != null)
                 {
-                    instance.SetData(new UserAccountDto(account), "UserAccount");
+                    if (account.Visibility == AccountVisibility.Visible ||
+                        account.Visibility == AccountVisibility.HiddenFromGuests && instance.LoggedIn ||
+                        instance.CheckAccess(AccountManager.FlagViewHiddenAccount))
+                    {
+                        instance.SetData(new UserAccountDto(account));
+                    }
+                    else
+                    {
+                        instance.SetError("InvalidAccount");
+                    }
                 }
                 else
                 {
@@ -100,23 +136,26 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount localAccount = instance.LocalAccount;
+            AccountContext context = instance.AccountContext;
 
-            if (instance.LoggedIn && userAccount != null)
+            if (instance.LoggedIn)
             {
-                UserAccount targetAccount = instance.Accounts.GetAccount(id);
+                UserAccount targetAccount = (from a in context.Account where a.Id == id select a).FirstOrDefault();
 
                 if (targetAccount != null)
                 {
                     if (userAccount.Id == localAccount.Id || instance.Accounts.CheckAccess(localAccount, AccountManager.FlagEditAccountBasic))
                     {
+                        AccountLogContext logContext = instance.AccountLogContext;
                         AccountEditRecord editRecord = new AccountEditRecord();
+                        HashSet<AccountEditField> editFields = new HashSet<AccountEditField>(); 
 
                         // Self editable fields
 
                         // Gender
                         if (targetAccount.Gender != userAccount.Gender)
                         {
-                            editRecord.AddField("Gender", targetAccount.Gender, userAccount.Gender);
+                            editFields.Add(new AccountEditField("Gender", targetAccount.Gender, userAccount.Gender));
 
                             targetAccount.Gender = userAccount.Gender;
                         }
@@ -124,7 +163,7 @@ namespace LanPlatform.Controllers
                         // First Name
                         if (targetAccount.FirstName != userAccount.FirstName)
                         {
-                            editRecord.AddField("FirstName", targetAccount.FirstName, userAccount.LastName);
+                            editFields.Add(new AccountEditField("FirstName", targetAccount.FirstName, userAccount.LastName));
 
                             targetAccount.FirstName = userAccount.FirstName;
                         }
@@ -132,7 +171,7 @@ namespace LanPlatform.Controllers
                         // Last Name
                         if (targetAccount.LastName != userAccount.LastName)
                         {
-                            editRecord.AddField("LastName", targetAccount.LastName, userAccount.LastName);
+                            editFields.Add(new AccountEditField("LastName", targetAccount.LastName, userAccount.LastName));
 
                             targetAccount.LastName = userAccount.LastName;
                         }
@@ -140,7 +179,7 @@ namespace LanPlatform.Controllers
                         // Birthday
                         if (targetAccount.Birthday != userAccount.Birthday)
                         {
-                            editRecord.AddField("Birthday", targetAccount.Birthday, userAccount.Birthday);
+                            editFields.Add(new AccountEditField("Birthday", targetAccount.Birthday, userAccount.Birthday));
 
                             targetAccount.Birthday = userAccount.Birthday;
                         }
@@ -148,7 +187,7 @@ namespace LanPlatform.Controllers
                         // ContactEmail
                         if (targetAccount.ContactEmail != userAccount.ContactEmail)
                         {
-                            editRecord.AddField("ContactEmail", targetAccount.ContactEmail, userAccount.ContactEmail);
+                            editFields.Add(new AccountEditField("ContactEmail", targetAccount.ContactEmail, userAccount.ContactEmail));
 
                             targetAccount.ContactEmail = userAccount.ContactEmail;
                         }
@@ -156,7 +195,7 @@ namespace LanPlatform.Controllers
                         // ContactPhone
                         if (targetAccount.ContactPhone != userAccount.ContactPhone)
                         {
-                            editRecord.AddField("ContactPhone", targetAccount.ContactPhone, userAccount.ContactPhone);
+                            editFields.Add(new AccountEditField("ContactPhone", targetAccount.ContactPhone, userAccount.ContactPhone));
 
                             targetAccount.ContactPhone = userAccount.ContactPhone;
                         }
@@ -164,7 +203,7 @@ namespace LanPlatform.Controllers
                         // ContactFacebook
                         if (targetAccount.ContactFacebook != userAccount.ContactFacebook)
                         {
-                            editRecord.AddField("ContactFacebook", targetAccount.ContactFacebook, userAccount.ContactFacebook);
+                            editFields.Add(new AccountEditField("ContactFacebook", targetAccount.ContactFacebook, userAccount.ContactFacebook));
 
                             targetAccount.ContactFacebook = userAccount.ContactFacebook;
                         }
@@ -172,7 +211,7 @@ namespace LanPlatform.Controllers
                         // ContactSteam
                         if (targetAccount.ContactSteam != userAccount.ContactSteam)
                         {
-                            editRecord.AddField("ContactSteam", targetAccount.ContactSteam, userAccount.ContactSteam);
+                            editFields.Add(new AccountEditField("ContactSteam", targetAccount.ContactSteam, userAccount.ContactSteam));
 
                             targetAccount.ContactSteam = userAccount.ContactSteam;
                         }
@@ -180,7 +219,7 @@ namespace LanPlatform.Controllers
                         // Display Name
                         if (targetAccount.DisplayName != userAccount.DisplayName)
                         {
-                            editRecord.AddField("DisplayName", targetAccount.DisplayName, userAccount.DisplayName);
+                            editFields.Add(new AccountEditField("DisplayName", targetAccount.DisplayName, userAccount.DisplayName));
 
                             targetAccount.DisplayName = userAccount.DisplayName;
                         }
@@ -188,7 +227,7 @@ namespace LanPlatform.Controllers
                         // Avatar
                         if (targetAccount.Avatar != userAccount.Avatar)
                         {
-                            editRecord.AddField("Avatar", targetAccount.Avatar, userAccount.Avatar);
+                            editFields.Add(new AccountEditField("Avatar", targetAccount.Avatar, userAccount.Avatar));
 
                             targetAccount.Avatar = userAccount.Avatar;
                         }
@@ -196,7 +235,7 @@ namespace LanPlatform.Controllers
                         // Visibility
                         if (targetAccount.Visibility != userAccount.Visibility)
                         {
-                            editRecord.AddField("Visibility", targetAccount.Visibility, userAccount.Visibility);
+                            editFields.Add(new AccountEditField("Visibility", targetAccount.Visibility, userAccount.Visibility));
 
                             targetAccount.Visibility = userAccount.Visibility;
                         }
@@ -208,7 +247,7 @@ namespace LanPlatform.Controllers
                             // AccountType
                             if (targetAccount.AccountType != userAccount.AccountType)
                             {
-                                editRecord.AddField("AccountType", targetAccount.AccountType, userAccount.AccountType);
+                                editFields.Add(new AccountEditField("AccountType", targetAccount.AccountType, userAccount.AccountType));
 
                                 targetAccount.AccountType = userAccount.AccountType;
                             }
@@ -216,7 +255,7 @@ namespace LanPlatform.Controllers
                             // TotalEvents
                             if (targetAccount.TotalEvents != userAccount.TotalEvents)
                             {
-                                editRecord.AddField("TotalEvents", targetAccount.TotalEvents, userAccount.TotalEvents);
+                                editFields.Add(new AccountEditField("TotalEvents", targetAccount.TotalEvents, userAccount.TotalEvents));
 
                                 targetAccount.TotalEvents = userAccount.TotalEvents;
                             }
@@ -224,7 +263,7 @@ namespace LanPlatform.Controllers
                             // EventOffset
                             if (targetAccount.EventOffset != userAccount.EventOffset)
                             {
-                                editRecord.AddField("EventOffset", targetAccount.EventOffset, userAccount.EventOffset);
+                                editFields.Add(new AccountEditField("EventOffset", targetAccount.EventOffset, userAccount.EventOffset));
 
                                 targetAccount.EventOffset = userAccount.EventOffset;
                             }
@@ -232,7 +271,7 @@ namespace LanPlatform.Controllers
                             // RemoteEvents
                             if (targetAccount.RemoteEvents != userAccount.RemoteEvents)
                             {
-                                editRecord.AddField("RemoteEvents", targetAccount.RemoteEvents, userAccount.RemoteEvents);
+                                editFields.Add(new AccountEditField("RemoteEvents", targetAccount.RemoteEvents, userAccount.RemoteEvents));
 
                                 targetAccount.RemoteEvents = userAccount.RemoteEvents;
                             }
@@ -240,17 +279,22 @@ namespace LanPlatform.Controllers
                             // LastEvent
                             if (targetAccount.LastEvent != userAccount.LastEvent)
                             {
-                                editRecord.AddField("LastEvent", targetAccount.LastEvent, userAccount.LastEvent);
+                                editFields.Add(new AccountEditField("LastEvent", targetAccount.LastEvent, userAccount.LastEvent));
 
                                 targetAccount.LastEvent = userAccount.LastEvent;
                             }
                         }
 
+                        // Attempt to save updated account info
+                        bool saved = false;
+
                         try
                         {
-                            instance.Context.SaveChanges();
+                            context.SaveChanges();
 
                             instance.SetData(new UserAccountDto(targetAccount), "UserAccount");
+
+                            saved = true;
                         }
                         catch (Exception e)
                         {
@@ -261,6 +305,44 @@ namespace LanPlatform.Controllers
                             else
                             {
                                 instance.SetError("SaveError");
+                            }
+                        }
+
+                        // Save logs if successful
+                        if (saved)
+                        {
+                            bool logSuccess = false;
+
+                            logContext.AccountEditRecord.Add(editRecord);
+
+                            try
+                            {
+                                logContext.SaveChanges();
+
+                                logSuccess = true;
+                            }
+                            catch (Exception)
+                            {
+                                System.Console.WriteLine("Failed to save account edit record.");
+                            }
+
+                            if (logSuccess)
+                            {
+                                foreach (AccountEditField field in editFields)
+                                {
+                                    field.Action = editRecord.Id;
+
+                                    logContext.AccountEditField.Add(field);
+                                }
+
+                                try
+                                {
+                                    logContext.SaveChanges();
+                                }
+                                catch (Exception)
+                                {
+                                    System.Console.WriteLine("Failed to save account edit record fields.");
+                                }
                             }
                         }
                     }
@@ -556,7 +638,8 @@ namespace LanPlatform.Controllers
                         // Check if target is protected
                         if (!targetAccount.Root || targetAccount.Id == localAccount.Id)
                         {
-                            List<AuthUsername> usernames = instance.Accounts.GetAccountUsernames(targetAccount);
+                            List<AuthUsername> usernames = (from u in instance.AccountContext.AuthUsername
+                                where u.Account == targetAccount.Id select u).ToList();
 
                             instance.SetData(AuthUsernameDto.ConvertList(usernames), "AuthUsernameList");
                         }
@@ -589,6 +672,7 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount localAccount = instance.LocalAccount;
+            AccountContext context = instance.AccountContext;
 
             // Check if request is valid
             if (id > 0 && request.Username.Length > 0 && request.Password.Length > 0)
@@ -605,13 +689,17 @@ namespace LanPlatform.Controllers
                         if (!targetAccount.Root || targetAccount.Id == localAccount.Id)
                         {
                             // Check if username already exists
-                            if (instance.Accounts.GetUsername(request.Username) == null)
+                            AuthUsername username = (from u in context.AuthUsername
+                                where u.Username.Equals(request.Username, StringComparison.OrdinalIgnoreCase)
+                                select u).FirstOrDefault();
+
+                            if (username == null)
                             {
-                                AuthUsername username = instance.Accounts.CreateUsername(id, request.Username, request.Password);
+                                username = instance.Accounts.CreateUsername(id, request.Username, request.Password);
 
                                 try
                                 {
-                                    instance.Context.SaveChanges();
+                                    context.SaveChanges();
 
                                     instance.SetData(new AuthUsernameDto(username), "AuthUsername");
                                 }
@@ -653,6 +741,7 @@ namespace LanPlatform.Controllers
         public HttpResponseMessage EditUsername(long id, String name, [FromBody] AuthUsernameDto username)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            AccountContext context = instance.AccountContext;
 
             // Check if request is valid
             if (id > 0 && username.Password.Length > 0)
@@ -665,19 +754,21 @@ namespace LanPlatform.Controllers
                     if (id == instance.LocalAccount?.Id ||
                         instance.Accounts.CheckAccess(AccountManager.FlagEditUsername) && !target.Root)
                     {
-                        AuthUsername targetUsername = instance.Accounts.GetUsername(name);
+                        AuthUsername targetUsername = (from u in context.AuthUsername
+                            where u.Username.Equals(name, StringComparison.OrdinalIgnoreCase) && u.Account == id
+                            select u).FirstOrDefault();
 
                         if (targetUsername?.Account == id)
                         {
                             targetUsername.Salt = AuthUsername.GenerateSalt();
-                            targetUsername.CryptPassword =
+                            targetUsername.Password =
                                 AuthUsername.EncryptPassword(username.Password, targetUsername.Salt);
 
                             // TODO: Log action
 
                             try
                             {
-                                instance.Context.SaveChanges();
+                                context.SaveChanges();
 
                                 instance.SetData(true, "bool");
                             }
@@ -721,23 +812,25 @@ namespace LanPlatform.Controllers
         public HttpResponseMessage DeleteUsername(long id, String name)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
-
             UserAccount target = instance.Accounts.GetAccount(id);
+            AccountContext context = instance.AccountContext;
 
             if (target != null)
             {
                 if (id == instance.LocalAccount?.Id ||
                     instance.Accounts.CheckAccess(AccountManager.FlagEditUsername) && !target.Root)
                 {
-                    AuthUsername username = instance.Accounts.GetUsername(name);
+                    AuthUsername username = (from u in context.AuthUsername
+                        where u.Username.Equals(name, StringComparison.OrdinalIgnoreCase) && u.Account == id
+                        select u).FirstOrDefault();
 
                     if (username?.Account == id)
                     {
-                        instance.Accounts.RemoveUsername(username);
+                        context.AuthUsername.Remove(username);
 
                         try
                         {
-                            instance.Context.SaveChanges();
+                            context.SaveChanges();
 
                             instance.SetData(true, "bool");
                         }
@@ -772,6 +865,7 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount localAccount = instance.LocalAccount;
+            AccountContext context = instance.AccountContext;
 
             // Check if request is valid
             if (id > 0)
@@ -787,7 +881,7 @@ namespace LanPlatform.Controllers
                         // Check if target is protected
                         if (!targetAccount.Root || targetAccount.Id == localAccount.Id)
                         {
-                            List<AuthSession> sessions = instance.Accounts.GetAccountSessions(targetAccount);
+                            List<AuthSession> sessions = (from s in context.AuthSession where s.Account == id select s).ToList();
 
                             instance.SetData(AuthSessionDto.ConvertList(sessions), "AuthSessionList");
                         }
@@ -848,18 +942,19 @@ namespace LanPlatform.Controllers
         public HttpResponseMessage DeleteSession(long id, long authId)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
+            AccountContext context = instance.AccountContext;
 
-            if(id == instance.LocalAccount?.Id)
+            if (id == instance.LocalAccount?.Id)
             {
-                AuthSession session = instance.Accounts.GetSession(authId);
+                AuthSession session = (from s in context.AuthSession where s.Id == authId && s.Account == id select s).FirstOrDefault();
 
-                if (session?.Account == id)
+                if (session != null)
                 {
-                    instance.Accounts.RemoveSession(session);
+                    context.AuthSession.Remove(session);
 
                     try
                     {
-                        instance.Context.SaveChanges();
+                        context.SaveChanges();
 
                         instance.SetData(true, "bool");
                     }
@@ -968,12 +1063,18 @@ namespace LanPlatform.Controllers
         public HttpResponseMessage Logout()
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
-            
+            AccountContext context = instance.AccountContext;
+
             if (instance.LoggedIn)
             {
                 HttpCookie sessionId = HttpContext.Current.Request.Cookies["LPSessionId"];
 
-                instance.Accounts.RemoveSession(AuthSession.GetIdFromCookie(sessionId));
+                AuthSession session = (from s in context.AuthSession
+                    where s.Id == AuthSession.GetIdFromCookie(sessionId) && s.Account == instance.LocalAccount.Id
+                    select s).FirstOrDefault();
+
+                if(session != null)
+                    context.AuthSession.Remove(session);
 
                 CookieHeaderValue sessionIdCookie = new CookieHeaderValue("LPSessionId", "");
                 CookieHeaderValue sessionKeyCookie = new CookieHeaderValue("LPSessionKey", "");

@@ -8,16 +8,13 @@ namespace LanPlatform.Auth
     public class AuthUsername : AuthInfo
     {
         public String Username { get; set; }
-        [NotMapped]
         public String Password { get; set; }
-        public String CryptPassword { get; set; }
         public String Salt { get; set; }
 
         public AuthUsername()
         {
             Username = "";
             Password = "";
-            CryptPassword = "";
             Salt = "";
         }
 
@@ -25,7 +22,7 @@ namespace LanPlatform.Auth
         {
             String cryptPassword = EncryptPassword(password, Salt);
 
-            return cryptPassword.Equals(CryptPassword);
+            return cryptPassword.Equals(Password);
         }
 
         public static AuthUsername CreateAuth(String username, String password)
@@ -34,7 +31,7 @@ namespace LanPlatform.Auth
 
             auth.Username = username;
             auth.Salt = GenerateSalt();
-            auth.CryptPassword = EncryptPassword(password, auth.Salt);
+            auth.Password = EncryptPassword(password, auth.Salt);
 
             return auth;
         }

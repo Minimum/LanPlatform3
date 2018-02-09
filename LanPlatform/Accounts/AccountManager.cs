@@ -6,6 +6,7 @@ using System.Linq;
 using System.Web;
 using LanPlatform.Auth;
 using LanPlatform.DAL;
+using LanPlatform.DAL.Logs;
 using LanPlatform.Events;
 using LanPlatform.Models;
 using LanPlatform.Models.Requests;
@@ -29,14 +30,16 @@ namespace LanPlatform.Accounts
         public const String SettingAllowRegister = "AccountAllowRegister";
         public const String SettingDefaultAvatar = "AccountDefaultAvatar";
 
-        protected PlatformContext Context;
+        protected AccountContext Context;
+        protected AccountLogContext LogContext;
         protected UserAccount LocalAccount;
 
         protected AppInstance Instance;
 
         public AccountManager(AppInstance instance)
         {
-            Context = instance.Context;
+            Context = instance.AccountContext;
+            LogContext = instance.AccountLogContext;
             LocalAccount = null;
 
             Instance = instance;
@@ -49,24 +52,24 @@ namespace LanPlatform.Accounts
             settings.AddSetting(new PlatformSetting(SettingAllowRegister, "Allow Account Registrations",
                 "Allows new users to register.", "0"));
 
-            settings.AddSetting(new PlatformSetting(SettingDefaultAvatar, "Default Avatar", "The default avatar for users.", "0"));
+            //settings.AddSetting(new PlatformSetting(SettingDefaultAvatar, "Default Avatar", "The default avatar for users.", "0"));
 
-            AccessRecord accessRecord = Context.AccessRecord.SingleOrDefault(s => s.Id == 0);
+            AccessRecord accessRecord = LogContext.AccessRecord.SingleOrDefault(s => s.Id == 0);
             UserAccount account = Context.Account.SingleOrDefault(s => s.Id == 0);
-            AccountEditField editField = Context.AccountEditField.SingleOrDefault(s => s.Id == 0);
-            AccountEditRecord editRecord = Context.AccountEditRecord.SingleOrDefault(s => s.Id == 0);
+            AccountEditField editField = LogContext.AccountEditField.SingleOrDefault(s => s.Id == 0);
+            AccountEditRecord editRecord = LogContext.AccountEditRecord.SingleOrDefault(s => s.Id == 0);
             UserRoleAccess accountRole = Context.AccountRole.SingleOrDefault(s => s.Id == 0);
             AuthSession session = Context.AuthSession.SingleOrDefault(s => s.Id == 0);
-            AuthSessionAttempt sessionAttempt = Context.AuthSessionAttempt.SingleOrDefault(s => s.Id == 0);
+            AuthSessionAttempt sessionAttempt = LogContext.AuthSessionAttempt.SingleOrDefault(s => s.Id == 0);
             AuthUsername username = Context.AuthUsername.SingleOrDefault(s => s.Id == 0);
-            AuthUsernameAttempt usernameAttempt = Context.AuthUsernameAttempt.SingleOrDefault(s => s.Id == 0);
+            AuthUsernameAttempt usernameAttempt = LogContext.AuthUsernameAttempt.SingleOrDefault(s => s.Id == 0);
             UserRole role = Context.Role.SingleOrDefault(s => s.Id == 0);
 
             return true;
         }
 
         /*
-         * General auth
+         * General Authentication
          */
 
         public UserAccount AuthenticateLocalUser()
@@ -90,10 +93,25 @@ namespace LanPlatform.Accounts
                     // Update account's last active time
                     UpdateActivity(localAccount);
                 }
-                else
+                else if(sessionKey.Value.Length > 0)
                 {
                     // Log invalid session key attempt
-                    Context.AuthSessionAttempt.Add(new AuthSessionAttempt(Instance, id, sessionKey.Value));
+                    AuthSessionAttempt attempt = new AuthSessionAttempt(Instance, id, sessionKey.Value);
+
+                    LogContext.AuthSessionAttempt.Add(attempt);
+
+                    try
+                    {
+                        LogContext.SaveChanges();
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("[" + Instance.Time + "] WARNING: Failed to log security event.\n * Event: " + attempt.Address + " failed a session key challenge.");
+                    }
+
+                    // Attempt to remove failed key
+                    Instance.AddCookie("LPSessionId", "", DateTimeOffset.UtcNow.AddDays(-1));
+                    Instance.AddCookie("LPSessionKey", "", DateTimeOffset.UtcNow.AddDays(-1));
                 }
             }
 
@@ -114,13 +132,6 @@ namespace LanPlatform.Accounts
             return localAccount;
         }
 
-        public void PostAuthTasks(UserAccount account)
-        {
-            
-
-            return;
-        }
-
         /*
          * Auth (Usernames)
          */
@@ -132,10 +143,13 @@ namespace LanPlatform.Accounts
 
         public AuthUsername CreateUsername(long accountId, String username, String password)
         {
-            AuthUsername auth = null;
+            AuthUsername auth = (from u in Context.AuthUsername
+                where
+                    u.Username.Equals(username, StringComparison.OrdinalIgnoreCase)
+                select u).FirstOrDefault();
 
             // Check if username already exists
-            if (GetUsername(username) == null)
+            if (auth == null)
             {
                 // Create new auth
                 auth = AuthUsername.CreateAuth(username, password);
@@ -148,27 +162,14 @@ namespace LanPlatform.Accounts
             return auth;
         }
 
-        public AuthUsername GetUsername(String username)
-        {
-            return Context.AuthUsername.SingleOrDefault(s => s.Username.Equals(username, StringComparison.Ordinal));
-        }
-
-        public List<AuthUsername> GetAccountUsernames(UserAccount account)
-        {
-            return Context.AuthUsername.Where(s => s.Account == account.Id).ToList();
-        }
-
-        public void RemoveUsername(AuthUsername username)
-        {
-            Context.AuthUsername.Remove(username);
-
-            return;
-        }
-
         public UserAccount AuthByUsername(String username, String password)
         {
             UserAccount account = null;
-            AuthUsername auth = GetUsername(username);
+            AuthUsername auth = (from u in Context.AuthUsername
+                where
+                    u.Username.Equals(username, StringComparison.OrdinalIgnoreCase) &&
+                    u.Active
+                select u).FirstOrDefault();
 
             // Authenticate
             if (auth != null && auth.Authenticate(password))
@@ -177,27 +178,12 @@ namespace LanPlatform.Accounts
                 account = GetAccount(auth.Account);
             }
 
-            if (account != null)
-            {
-                PostAuthTasks(account);
-            }
-
             return account;
         }
         
         /*
          * Auth (Sessions)
          */
-
-        public AuthSession GetSession(long id)
-        {
-            return Context.AuthSession.SingleOrDefault(s => s.Id == id);
-        }
-
-        public List<AuthSession> GetAccountSessions(UserAccount account)
-        {
-            return Context.AuthSession.Where(s => s.Account == account.Id).ToList();
-        }
 
         public AuthSession CreateSession(UserAccount account)
         {
@@ -211,40 +197,21 @@ namespace LanPlatform.Accounts
             return session;
         }
 
-        public void RemoveSession(AuthSession session)
-        {
-            Context.AuthSession.Remove(session);
-
-            return;
-        }
-
-        public void RemoveSession(long id)
-        {
-            AuthSession session = GetSession(id);
-
-            if (session != null)
-            {
-                Context.AuthSession.Remove(session);
-            }
-
-            return;
-        }
-
         public UserAccount AuthBySession(long sessionId, String key)
         {
             UserAccount account = null;
-            AuthSession auth = GetSession(sessionId);
+            AuthSession auth = (from s in Context.AuthSession where 
+                                s.Id == sessionId &&
+                                s.Active &&
+                                (s.ExpireDate == 0 || s.ExpireDate > Instance.Time) && 
+                                s.Key.Equals(key, StringComparison.OrdinalIgnoreCase)
+                                select s).FirstOrDefault();
 
             // Authenticate
-            if (auth != null && auth.Authenticate(sessionId, key, Instance.Time))
+            if (auth != null)
             {
                 // Load account
                 account = GetAccount(auth.Account);
-            }
-
-            if (account != null)
-            {
-                PostAuthTasks(account);
             }
 
             return account;
@@ -511,7 +478,7 @@ namespace LanPlatform.Accounts
 
         public void AddAccessRecord(AccessRecord record)
         {
-            Context.AccessRecord.Add(record);
+            LogContext.AccessRecord.Add(record);
 
             return;
         }

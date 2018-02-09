@@ -5,7 +5,7 @@ using System.Web;
 
 namespace LanPlatform.DAL
 {
-    public class LogContext
+    public class LogInstallContext
     {
     }
 }

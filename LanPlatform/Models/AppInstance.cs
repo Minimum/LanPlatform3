@@ -11,6 +11,7 @@ using System.Web;
 using System.Web.Http;
 using LanPlatform.Accounts;
 using LanPlatform.DAL;
+using LanPlatform.DAL.Logs;
 using LanPlatform.DTO;
 using LanPlatform.Settings;
 using Newtonsoft.Json;
@@ -45,9 +46,16 @@ namespace LanPlatform.Models
         public HttpContext RequestContext => InternalRequestContext;
         protected HttpContext InternalRequestContext;
 
+        // TODO: Remove this
         [JsonIgnore]
         public PlatformContext Context => DataContext;
         protected PlatformContext DataContext;
+
+        [JsonIgnore]
+        public AccountContext AccountContext { get; protected set; }
+
+        [JsonIgnore]
+        public AccountLogContext AccountLogContext { get; set; }
 
         [JsonIgnore]
         public List<CookieHeaderValue> Cookies => CookieList;
@@ -87,6 +95,8 @@ namespace LanPlatform.Models
             Data = null;
 
             DataContext = new PlatformContext();
+            AccountContext = new AccountContext();
+            AccountLogContext = new AccountLogContext();
 
             CookieList = new List<CookieHeaderValue>();
 

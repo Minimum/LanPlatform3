@@ -17,5 +17,19 @@ namespace LanPlatform.Accounts
             OldValue = "";
             NewValue = "";
         }
+
+        public AccountEditField(String fieldName, object oldValue, object newValue)
+        {
+            FieldName = fieldName;
+            OldValue = oldValue.ToString();
+            NewValue = newValue.ToString();
+        }
+
+        public AccountEditField(String fieldName, String oldValue, String newValue)
+        {
+            FieldName = fieldName;
+            OldValue = oldValue;
+            NewValue = newValue;
+        }
     }
 }

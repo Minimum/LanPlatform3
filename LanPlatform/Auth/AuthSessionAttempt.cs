@@ -10,10 +10,13 @@ namespace LanPlatform.Auth
     {
         public long SessionId { get; set; }
         public String Key { get; set; }
+        public String Address { get; set; }
 
         public AuthSessionAttempt()
         {
-            
+            SessionId = 0;
+            Key = "";
+            Address = "";
         }
 
         public AuthSessionAttempt(AppInstance instance, long id, String key)
@@ -21,6 +24,7 @@ namespace LanPlatform.Auth
         {
             SessionId = id;
             Key = key;
+            Address = instance.RequestContext.Request.UserHostAddress;
         }
     }
 }
