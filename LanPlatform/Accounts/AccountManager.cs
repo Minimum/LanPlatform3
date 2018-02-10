@@ -199,20 +199,13 @@ namespace LanPlatform.Accounts
 
         public UserAccount AuthBySession(long sessionId, String key)
         {
-            UserAccount account = null;
-            AuthSession auth = (from s in Context.AuthSession where 
-                                s.Id == sessionId &&
+            UserAccount account = (from s in Context.AuthSession
+                                join a in Context.Account on s.Account equals a.Id
+                                where s.Id == sessionId &&
                                 s.Active &&
                                 (s.ExpireDate == 0 || s.ExpireDate > Instance.Time) && 
                                 s.Key.Equals(key, StringComparison.OrdinalIgnoreCase)
-                                select s).FirstOrDefault();
-
-            // Authenticate
-            if (auth != null)
-            {
-                // Load account
-                account = GetAccount(auth.Account);
-            }
+                                select a).FirstOrDefault();
 
             return account;
         }
