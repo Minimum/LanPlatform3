@@ -200,12 +200,12 @@ namespace LanPlatform.Accounts
         public UserAccount AuthBySession(long sessionId, String key)
         {
             UserAccount account = (from s in Context.AuthSession
-                                join a in Context.Account on s.Account equals a.Id
-                                where s.Id == sessionId &&
-                                s.Active &&
-                                (s.ExpireDate == 0 || s.ExpireDate > Instance.Time) && 
-                                s.Key.Equals(key, StringComparison.OrdinalIgnoreCase)
-                                select a).FirstOrDefault();
+                                   join a in Context.Account on s.Account equals a.Id
+                                   where s.Id == sessionId &&
+                                   s.Active &&
+                                   (s.ExpireDate == 0 || s.ExpireDate > Instance.Time) &&
+                                   s.Key.Equals(key, StringComparison.OrdinalIgnoreCase)
+                                   select a).FirstOrDefault();
 
             return account;
         }
@@ -405,17 +405,12 @@ namespace LanPlatform.Accounts
         // Check the database for admin flags relating to an account ID
         protected bool CheckAdminAccess(long accountId, String flag, String scope)
         {
-            bool success = Context.RoleFlag
-                // Role Flag Table
-                            .Where(roleFlag => flag.Equals(roleFlag.Flag, StringComparison.OrdinalIgnoreCase) &&
-                                scope.Equals(roleFlag.Scope, StringComparison.OrdinalIgnoreCase) &&
-                                // Role Table
-                                Context.Role.Where(role =>
-                                    // Account Role Table
-                                    Context.AccountRole.Where(accountRole => accountRole.User == accountId)
-                                    .Select(accountRole => accountRole.Role).Contains(role.Id))
-                                .Select(role => role.Id).Contains(roleFlag.Role)
-                            ).AsNoTracking().FirstOrDefault() != null;
+            bool success = (from p in Context.RoleFlag
+                join r in Context.AccountRole on p.Role equals r.Role
+                where r.User == accountId
+                && p.Scope.Equals(scope, StringComparison.OrdinalIgnoreCase)
+                && p.Flag.Equals(flag, StringComparison.OrdinalIgnoreCase)
+                select p).AsNoTracking().FirstOrDefault() != null;
 
             return success;
         }

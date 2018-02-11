@@ -370,36 +370,46 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             ContentManager contentManager = new ContentManager(instance);
-
-            UserAccount account = instance.LocalAccount;
+            AccountContext context = instance.AccountContext;
 
             if (instance.LoggedIn)
             {
-                if (account.Id == id || instance.CheckAccess(AccountManager.FlagEditAccountBasic))
+                UserAccount target = instance.LocalAccount.Id == id
+                    ? instance.LocalAccount
+                    : (from a in context.Account where a.Id == id select a).FirstOrDefault();
+
+                if (target != null)
                 {
-                    ContentItem content = contentManager.GetItemById(id);
-
-                    if (content != null && content.Visible)
+                    if (instance.LocalAccount.Id == id || (!target.Root && instance.CheckAccess(AccountManager.FlagEditAccountBasic)))
                     {
-                        if (content.IsImage)
-                        {
-                            account.Avatar = id;
+                        ContentItem content = contentManager.GetItemById(id);
 
-                            instance.SetData(true, "bool");
+                        if (content != null && content.Visible)
+                        {
+                            if (content.IsImage)
+                            {
+                                target.Avatar = id;
+
+                                instance.SetData(true, "bool");
+                            }
+                            else
+                            {
+                                instance.SetError("InvalidContentType");
+                            }
                         }
                         else
                         {
-                            instance.SetError("InvalidContentType");
+                            instance.SetError("InvalidContent");
                         }
                     }
                     else
                     {
-                        instance.SetError("InvalidContent");
+                        instance.SetAccessDenied(AccountManager.FlagEditAccountBasic);
                     }
                 }
                 else
                 {
-                    instance.SetAccessDenied(AccountManager.FlagEditAccountBasic);
+                    instance.SetError("InvalidAccount");
                 }
             }
             else
@@ -415,14 +425,17 @@ namespace LanPlatform.Controllers
         public HttpResponseMessage GetRoles(long id)
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
-
             UserAccount target = instance.Accounts.GetAccount(id);
+            AccountContext context = instance.AccountContext;
 
             if (target != null)
             {
                 if (instance.Accounts.IsAccountVisible(target))
                 {
-                    List<UserRole> roles = instance.Accounts.GetRolesByAccount(target);
+                    List<UserRole> roles = (from r in context.Role
+                        join ar in context.AccountRole on r.Id equals ar.Role
+                        where ar.User == id
+                        select r).ToList();
 
                     instance.SetData(UserRoleDto.ConvertList(roles), "UserRoleList");
                 }
@@ -445,15 +458,16 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount target = instance.Accounts.GetAccount(id);
+            AccountContext context = instance.AccountContext;
 
             if (target != null)
             {
                 if (instance.Accounts.CheckAccess(AccountManager.FlagEditAccountAdvanced) 
                     && (!target.Root || target.Id == instance.LocalAccount.Id))
                 {
-                    List<UserRole> roles = instance.Accounts.GetRolesByAccount(id);
+                    int roleCount = (from r in context.AccountRole where r.User == id && r.Role == roleId select r).Count();
 
-                    if (roles.All(s => s.Id != roleId))
+                    if (roleCount < 1)
                     {
                         UserRoleAccess access = new UserRoleAccess
                         {
@@ -461,11 +475,11 @@ namespace LanPlatform.Controllers
                             User = id
                         };
 
-                        instance.Accounts.AddAccountRoleAccess(access);
+                        context.AccountRole.Add(access);
 
                         try
                         {
-                            instance.Context.SaveChanges();
+                            context.SaveChanges();
 
                             instance.SetData(true, "bool");
                         }
@@ -504,7 +518,7 @@ namespace LanPlatform.Controllers
                 if (instance.Accounts.CheckAccess(AccountManager.FlagEditAccountAdvanced)
                     && (!target.Root || target.Id == instance.LocalAccount.Id))
                 {
-                    PlatformContext context = instance.Context;
+                    AccountContext context = instance.AccountContext;
                     List<UserRoleAccess> roles = (from a in context.AccountRole where a.User == id && a.Role == roleId select a).ToList();
 
                     context.AccountRole.RemoveRange(roles);
@@ -539,14 +553,25 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount target = instance.Accounts.GetAccount(id);
+            AccountContext context = instance.AccountContext;
 
-            if (target != null)
+            if (instance.LoggedIn)
             {
-                if (instance.Accounts.IsAccountVisible(target))
+                if (target != null)
                 {
-                    List<UserPermission> permissions = instance.Accounts.GetAccountFlags(target);
+                    if (instance.Accounts.IsAccountVisible(target))
+                    {
+                        List<UserPermission> permissions = (from p in context.RoleFlag
+                            join r in context.AccountRole on p.Role equals r.Role
+                            where r.User == id
+                            select p).ToList();
 
-                    instance.SetData(UserPermissionDto.ConvertList(permissions), "UserPermissionList");
+                        instance.SetData(UserPermissionDto.ConvertList(permissions), "UserPermissionList");
+                    }
+                    else
+                    {
+                        instance.SetError("InvalidAccount");
+                    }
                 }
                 else
                 {
@@ -555,7 +580,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("InvalidAccount");
+                instance.SetError("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -567,14 +592,26 @@ namespace LanPlatform.Controllers
         {
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount target = instance.Accounts.GetAccount(id);
+            AccountContext context = instance.AccountContext;
 
-            if (target != null)
+            if (instance.LoggedIn)
             {
-                if (instance.Accounts.IsAccountVisible(target))
+                if (target != null)
                 {
-                    List<UserPermission> permissions = instance.Accounts.GetAccountFlags(id, scope);
+                    if (instance.Accounts.IsAccountVisible(target))
+                    {
+                        List<UserPermission> permissions = (from p in context.RoleFlag
+                            join r in context.AccountRole on p.Role equals r.Role
+                            where r.User == id
+                            && p.Scope.Equals(scope, StringComparison.OrdinalIgnoreCase)
+                            select p).ToList();
 
-                    instance.SetData(UserPermissionDto.ConvertList(permissions), "UserPermissionList");
+                        instance.SetData(UserPermissionDto.ConvertList(permissions), "UserPermissionList");
+                    }
+                    else
+                    {
+                        instance.SetError("InvalidAccount");
+                    }
                 }
                 else
                 {
@@ -583,7 +620,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("InvalidAccount");
+                instance.SetError("AnonymousUser");
             }
 
             return instance.ToResponse();
@@ -596,11 +633,18 @@ namespace LanPlatform.Controllers
             AppInstance instance = new AppInstance(Request, HttpContext.Current);
             UserAccount target = instance.Accounts.GetAccount(id);
 
-            if (target != null)
+            if (instance.LoggedIn)
             {
-                if (instance.Accounts.IsAccountVisible(target))
+                if (target != null)
                 {
-                    instance.SetData(instance.Accounts.CheckAccess(target, flag, scope), "bool");
+                    if (instance.Accounts.IsAccountVisible(target))
+                    {
+                        instance.SetData(instance.Accounts.CheckAccess(target, flag, scope), "bool");
+                    }
+                    else
+                    {
+                        instance.SetError("InvalidAccount");
+                    }
                 }
                 else
                 {
@@ -609,7 +653,7 @@ namespace LanPlatform.Controllers
             }
             else
             {
-                instance.SetError("InvalidAccount");
+                instance.SetError("AnonymousUser");
             }
 
             return instance.ToResponse();

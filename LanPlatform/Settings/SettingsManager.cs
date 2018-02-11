@@ -47,13 +47,13 @@ namespace LanPlatform.Settings
             }
         }
 
-        protected PlatformContext Context;
+        protected SettingContext Context;
 
         protected AppInstance Instance;
 
         public SettingsManager(AppInstance instance)
         {
-            Context = instance.Context;
+            Context = new SettingContext();
 
             Instance = instance;
         }
@@ -108,6 +108,13 @@ namespace LanPlatform.Settings
             }
 
             return success;
+        }
+
+        public void SaveChanges()
+        {
+            Context.SaveChanges();
+
+            return;
         }
     }
 }

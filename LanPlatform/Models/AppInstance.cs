@@ -46,11 +46,6 @@ namespace LanPlatform.Models
         public HttpContext RequestContext => InternalRequestContext;
         protected HttpContext InternalRequestContext;
 
-        // TODO: Remove this
-        [JsonIgnore]
-        public PlatformContext Context => DataContext;
-        protected PlatformContext DataContext;
-
         [JsonIgnore]
         public AccountContext AccountContext { get; protected set; }
 

@@ -327,6 +327,7 @@
     <Compile Include="DAL\LogInstallContext.cs" />
     <Compile Include="DAL\Logs\AccountLogContext.cs" />
     <Compile Include="DAL\PlatformContext.cs" />
+    <Compile Include="DAL\SettingContext.cs" />
     <Compile Include="Database\DatabaseObject.cs" />
     <Compile Include="Database\EditableDatabaseObject.cs" />
     <Compile Include="DTO\Accounts\AuthSessionDto.cs" />

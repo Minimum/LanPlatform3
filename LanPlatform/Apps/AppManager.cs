@@ -19,14 +19,10 @@ namespace LanPlatform.Apps
         public const String FlagLoanerCheckout = "AppLoanerCheckout";
         public const String FlagLoanerSteamCode = "AppLoanerSteamCode";
 
-        protected PlatformContext Context;
-
         protected AppInstance Instance;
 
         public AppManager(AppInstance instance)
         {
-            Context = instance.Context;
-
             Instance = instance;
         }
 
